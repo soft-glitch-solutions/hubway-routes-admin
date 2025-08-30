@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -10,6 +9,7 @@ import StopsManagement from '@/components/StopsManagement';
 import RoutesManagement from '@/components/RoutesManagement';
 import NearbySpotsManagement from '@/components/NearbySpotsManagement';
 import ProfileManagement from '@/components/ProfileManagement';
+import UsersManagement from '@/components/UsersManagement';
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -59,6 +59,8 @@ const Index = () => {
         return <RoutesManagement />;
       case 'nearby-spots':
         return <NearbySpotsManagement />;
+      case 'users':
+        return <UsersManagement />;
       case 'profile':
         return <ProfileManagement />;
       default:

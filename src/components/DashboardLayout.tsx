@@ -27,6 +27,7 @@ const DashboardLayout = ({ children, activeTab, onTabChange }: DashboardLayoutPr
     { id: 'stops', label: 'Stops', icon: Navigation },
     { id: 'routes', label: 'Routes', icon: Route },
     { id: 'nearby-spots', label: 'Nearby Spots', icon: Map },
+    { id: 'users', label: 'Users', icon: User },
     { id: 'profile', label: 'Profile', icon: User },
   ];
 
