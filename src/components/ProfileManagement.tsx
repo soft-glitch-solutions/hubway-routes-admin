@@ -92,8 +92,8 @@ const ProfileManagement = () => {
         .update({
           first_name: formData.first_name,
           last_name: formData.last_name,
-          preferred_transport: formData.preferred_transport || null,
-          preferred_language: formData.preferred_language || null,
+          preferred_transport: formData.preferred_transport === 'none' ? null : formData.preferred_transport || null,
+          preferred_language: formData.preferred_language === 'none' ? null : formData.preferred_language || null,
           home: formData.home || null,
         })
         .eq('id', user.id);
@@ -256,7 +256,7 @@ const ProfileManagement = () => {
                     <SelectValue placeholder="Select transport type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No preference</SelectItem>
+                    <SelectItem value="none">No preference</SelectItem>
                     <SelectItem value="Bus">Bus</SelectItem>
                     <SelectItem value="Taxi">Taxi</SelectItem>
                     <SelectItem value="Train">Train</SelectItem>
@@ -276,7 +276,7 @@ const ProfileManagement = () => {
                     <SelectValue placeholder="Select language" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No preference</SelectItem>
+                    <SelectItem value="none">No preference</SelectItem>
                     <SelectItem value="en">English</SelectItem>
                     <SelectItem value="af">Afrikaans</SelectItem>
                     <SelectItem value="zu">Zulu</SelectItem>

@@ -81,7 +81,7 @@ const RouteForm = ({ route, onSuccess, onCancel }: RouteFormProps) => {
         end_point: formData.end_point,
         transport_type: formData.transport_type,
         cost: parseFloat(formData.cost),
-        hub_id: formData.hub_id || null,
+        hub_id: formData.hub_id === 'none' ? null : formData.hub_id || null,
       };
 
       let error;
@@ -196,7 +196,7 @@ const RouteForm = ({ route, onSuccess, onCancel }: RouteFormProps) => {
                 <SelectValue placeholder="Select hub" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No hub</SelectItem>
+                <SelectItem value="none">No hub</SelectItem>
                 {hubs.map((hub) => (
                   <SelectItem key={hub.id} value={hub.id}>
                     {hub.name}
