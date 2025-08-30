@@ -1,13 +1,13 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { Route, Plus, Edit, Trash2, Search } from 'lucide-react';
+import RouteForm from './RouteForm';
 
 interface RouteData {
   id: string;
@@ -21,32 +21,17 @@ interface RouteData {
   updated_at: string;
 }
 
-interface Hub {
-  id: string;
-  name: string;
-}
-
 const RoutesManagement = () => {
   const [routes, setRoutes] = useState<RouteData[]>([]);
-  const [hubs, setHubs] = useState<Hub[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRoute, setSelectedRoute] = useState<RouteData | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    start_point: '',
-    end_point: '',
-    transport_type: '',
-    cost: '',
-    hub_id: '',
-  });
   const { toast } = useToast();
 
   useEffect(() => {
     fetchRoutes();
-    fetchHubs();
   }, []);
 
   const fetchRoutes = async () => {
@@ -67,95 +52,6 @@ const RoutesManagement = () => {
       });
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchHubs = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('hubs')
-        .select('id, name')
-        .order('name');
-
-      if (error) throw error;
-      setHubs(data || []);
-    } catch (error) {
-      console.error('Error fetching hubs:', error);
-    }
-  };
-
-  const handleCreate = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      const { data, error } = await supabase
-        .from('routes')
-        .insert({
-          name: formData.name,
-          start_point: formData.start_point,
-          end_point: formData.end_point,
-          transport_type: formData.transport_type,
-          cost: parseFloat(formData.cost),
-          hub_id: formData.hub_id || null,
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setRoutes([data, ...routes]);
-      setIsCreateOpen(false);
-      resetForm();
-      toast({
-        title: "Success",
-        description: "Route created successfully.",
-      });
-    } catch (error) {
-      console.error('Error creating route:', error);
-      toast({
-        title: "Error",
-        description: "Failed to create route.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!selectedRoute) return;
-
-    try {
-      const { data, error } = await supabase
-        .from('routes')
-        .update({
-          name: formData.name,
-          start_point: formData.start_point,
-          end_point: formData.end_point,
-          transport_type: formData.transport_type,
-          cost: parseFloat(formData.cost),
-          hub_id: formData.hub_id || null,
-        })
-        .eq('id', selectedRoute.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      setRoutes(routes.map(route => route.id === selectedRoute.id ? data : route));
-      setIsEditOpen(false);
-      setSelectedRoute(null);
-      resetForm();
-      toast({
-        title: "Success",
-        description: "Route updated successfully.",
-      });
-    } catch (error) {
-      console.error('Error updating route:', error);
-      toast({
-        title: "Error",
-        description: "Failed to update route.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -187,26 +83,14 @@ const RoutesManagement = () => {
 
   const openEditDialog = (route: RouteData) => {
     setSelectedRoute(route);
-    setFormData({
-      name: route.name,
-      start_point: route.start_point,
-      end_point: route.end_point,
-      transport_type: route.transport_type,
-      cost: route.cost.toString(),
-      hub_id: route.hub_id || '',
-    });
     setIsEditOpen(true);
   };
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      start_point: '',
-      end_point: '',
-      transport_type: '',
-      cost: '',
-      hub_id: '',
-    });
+  const handleFormSuccess = () => {
+    fetchRoutes();
+    setIsCreateOpen(false);
+    setIsEditOpen(false);
+    setSelectedRoute(null);
   };
 
   const filteredRoutes = routes.filter(route =>
@@ -248,107 +132,10 @@ const RoutesManagement = () => {
               Add Route
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Create New Route</DialogTitle>
-              <DialogDescription>
-                Add a new transport route to the system
-              </DialogDescription>
-            </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Route Name</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  required
-                  className="transport-input"
-                  placeholder="e.g., City Center to Airport"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="start_point">Start Point</Label>
-                  <Input
-                    id="start_point"
-                    value={formData.start_point}
-                    onChange={(e) => setFormData({...formData, start_point: e.target.value})}
-                    required
-                    className="transport-input"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="end_point">End Point</Label>
-                  <Input
-                    id="end_point"
-                    value={formData.end_point}
-                    onChange={(e) => setFormData({...formData, end_point: e.target.value})}
-                    required
-                    className="transport-input"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="transport_type">Transport Type</Label>
-                <Select value={formData.transport_type} onValueChange={(value) => setFormData({...formData, transport_type: value})}>
-                  <SelectTrigger className="transport-input">
-                    <SelectValue placeholder="Select transport type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Bus">Bus</SelectItem>
-                    <SelectItem value="Taxi">Taxi</SelectItem>
-                    <SelectItem value="Train">Train</SelectItem>
-                    <SelectItem value="Metro">Metro</SelectItem>
-                    <SelectItem value="Shuttle">Shuttle</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cost">Cost</Label>
-                  <Input
-                    id="cost"
-                    type="number"
-                    step="0.01"
-                    value={formData.cost}
-                    onChange={(e) => setFormData({...formData, cost: e.target.value})}
-                    required
-                    className="transport-input"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="hub_id">Associated Hub (Optional)</Label>
-                  <Select value={formData.hub_id} onValueChange={(value) => setFormData({...formData, hub_id: value})}>
-                    <SelectTrigger className="transport-input">
-                      <SelectValue placeholder="Select hub" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">No hub</SelectItem>
-                      {hubs.map((hub) => (
-                        <SelectItem key={hub.id} value={hub.id}>
-                          {hub.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit" className="transport-button-primary flex-1">
-                  Create Route
-                </Button>
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsCreateOpen(false)}
-                  className="transport-button-secondary flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </form>
-          </DialogContent>
+          <RouteForm 
+            onSuccess={handleFormSuccess}
+            onCancel={() => setIsCreateOpen(false)}
+          />
         </Dialog>
       </div>
 
@@ -426,109 +213,12 @@ const RoutesManagement = () => {
         )}
       </div>
 
-      {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Edit Route</DialogTitle>
-            <DialogDescription>
-              Update route information
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleEdit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Route Name</Label>
-              <Input
-                id="edit-name"
-                value={formData.name}
-                onChange={(e) => setFormData({...formData, name: e.target.value})}
-                required
-                className="transport-input"
-                placeholder="e.g., City Center to Airport"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-start_point">Start Point</Label>
-                <Input
-                  id="edit-start_point"
-                  value={formData.start_point}
-                  onChange={(e) => setFormData({...formData, start_point: e.target.value})}
-                  required
-                  className="transport-input"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-end_point">End Point</Label>
-                <Input
-                  id="edit-end_point"
-                  value={formData.end_point}
-                  onChange={(e) => setFormData({...formData, end_point: e.target.value})}
-                  required
-                  className="transport-input"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="edit-transport_type">Transport Type</Label>
-              <Select value={formData.transport_type} onValueChange={(value) => setFormData({...formData, transport_type: value})}>
-                <SelectTrigger className="transport-input">
-                  <SelectValue placeholder="Select transport type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Bus">Bus</SelectItem>
-                  <SelectItem value="Taxi">Taxi</SelectItem>
-                  <SelectItem value="Train">Train</SelectItem>
-                  <SelectItem value="Metro">Metro</SelectItem>
-                  <SelectItem value="Shuttle">Shuttle</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-cost">Cost</Label>
-                <Input
-                  id="edit-cost"
-                  type="number"
-                  step="0.01"
-                  value={formData.cost}
-                  onChange={(e) => setFormData({...formData, cost: e.target.value})}
-                  required
-                  className="transport-input"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-hub_id">Associated Hub (Optional)</Label>
-                <Select value={formData.hub_id} onValueChange={(value) => setFormData({...formData, hub_id: value})}>
-                  <SelectTrigger className="transport-input">
-                    <SelectValue placeholder="Select hub" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">No hub</SelectItem>
-                    {hubs.map((hub) => (
-                      <SelectItem key={hub.id} value={hub.id}>
-                        {hub.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" className="transport-button-primary flex-1">
-                Update Route
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setIsEditOpen(false)}
-                className="transport-button-secondary flex-1"
-              >
-                Cancel
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
+        <RouteForm 
+          route={selectedRoute}
+          onSuccess={handleFormSuccess}
+          onCancel={() => setIsEditOpen(false)}
+        />
       </Dialog>
     </div>
   );

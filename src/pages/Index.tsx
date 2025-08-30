@@ -9,6 +9,7 @@ import HubsManagement from '@/components/HubsManagement';
 import StopsManagement from '@/components/StopsManagement';
 import RoutesManagement from '@/components/RoutesManagement';
 import NearbySpotsManagement from '@/components/NearbySpotsManagement';
+import ProfileManagement from '@/components/ProfileManagement';
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -58,6 +59,8 @@ const Index = () => {
         return <RoutesManagement />;
       case 'nearby-spots':
         return <NearbySpotsManagement />;
+      case 'profile':
+        return <ProfileManagement />;
       default:
         return <OverviewDashboard />;
     }
