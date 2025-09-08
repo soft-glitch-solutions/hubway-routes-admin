@@ -10,6 +10,7 @@ import RoutesManagement from '@/components/RoutesManagement';
 import NearbySpotsManagement from '@/components/NearbySpotsManagement';
 import ProfileManagement from '@/components/ProfileManagement';
 import UsersManagement from '@/components/UsersManagement';
+import RouteStopsManagement from '@/components/RouteStopsManagement';
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -57,6 +58,8 @@ const Index = () => {
         return <StopsManagement />;
       case 'routes':
         return <RoutesManagement />;
+      case 'route-stops':
+        return <RouteStopsManagement />;
       case 'nearby-spots':
         return <NearbySpotsManagement />;
       case 'users':

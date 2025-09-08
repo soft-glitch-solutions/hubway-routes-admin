@@ -9,7 +9,8 @@ import {
   Map,
   User,
   Menu,
-  X
+  X,
+  Link
 } from 'lucide-react';
 
 interface DashboardLayoutProps {
@@ -26,6 +27,7 @@ const DashboardLayout = ({ children, activeTab, onTabChange }: DashboardLayoutPr
     { id: 'hubs', label: 'Hubs', icon: MapPin },
     { id: 'stops', label: 'Stops', icon: Navigation },
     { id: 'routes', label: 'Routes', icon: Route },
+    { id: 'route-stops', label: 'Route Stops', icon: Link },
     { id: 'nearby-spots', label: 'Nearby Spots', icon: Map },
     { id: 'users', label: 'Users', icon: User },
     { id: 'profile', label: 'Profile', icon: User },
