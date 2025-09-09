@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { MapPin, Route, Navigation, Map, TrendingUp } from 'lucide-react';
+import TransportMap from './TransportMap';
 
 const OverviewDashboard = () => {
   const [stats, setStats] = useState({
@@ -117,6 +118,22 @@ const OverviewDashboard = () => {
           );
         })}
       </div>
+
+      {/* Transport Map */}
+      <Card className="transport-card">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Map className="w-5 h-5 text-primary" />
+            Transport Network Map
+          </CardTitle>
+          <CardDescription>
+            All hubs and stops across South Africa
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <TransportMap />
+        </CardContent>
+      </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card className="transport-card">
