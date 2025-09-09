@@ -1,17 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { 
-  LayoutDashboard, 
-  MapPin, 
-  Navigation, 
-  Route, 
-  Map,
-  User,
-  Menu,
-  X,
-  Link
-} from 'lucide-react';
+import { Menu, X, Home, Building2, MapPin, Route, Users, User, FileText, BookOpen } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -23,14 +13,16 @@ const DashboardLayout = ({ children, activeTab, onTabChange }: DashboardLayoutPr
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const navigationItems = [
-    { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-    { id: 'hubs', label: 'Hubs', icon: MapPin },
-    { id: 'stops', label: 'Stops', icon: Navigation },
+    { id: 'overview', label: 'Overview', icon: Home },
+    { id: 'hubs', label: 'Hubs', icon: Building2 },
+    { id: 'stops', label: 'Stops', icon: MapPin },
     { id: 'routes', label: 'Routes', icon: Route },
-    { id: 'route-stops', label: 'Route Stops', icon: Link },
-    { id: 'hub-routes', label: 'Hub Routes', icon: Link },
-    { id: 'nearby-spots', label: 'Nearby Spots', icon: Map },
-    { id: 'users', label: 'Users', icon: User },
+    { id: 'route-stops', label: 'Route Stops', icon: Route },
+    { id: 'hub-routes', label: 'Hub Routes', icon: MapPin },
+    { id: 'nearby-spots', label: 'Nearby Spots', icon: MapPin },
+    { id: 'users', label: 'Users', icon: Users },
+    { id: 'blogs', label: 'Blogs', icon: FileText },
+    { id: 'documentation', label: 'Documentation', icon: BookOpen },
     { id: 'profile', label: 'Profile', icon: User },
   ];
 

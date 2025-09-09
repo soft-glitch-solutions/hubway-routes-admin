@@ -1,12 +1,14 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { Link, MapPin, Plus, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Trash2, Search, Eye, Plus } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface Hub {
   id: string;
@@ -30,13 +32,15 @@ interface HubWithRoutes extends Hub {
 }
 
 const HubRoutesManagement = () => {
+  const { toast } = useToast();
   const [hubs, setHubs] = useState<HubWithRoutes[]>([]);
   const [unassignedRoutes, setUnassignedRoutes] = useState<RouteData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedHubId, setSelectedHubId] = useState<string>('');
-  const [selectedRouteId, setSelectedRouteId] = useState<string>('');
-  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
-  const { toast } = useToast();
+  const [selectedHub, setSelectedHub] = useState('');
+  const [selectedRoute, setSelectedRoute] = useState('');
+  const [hubSearch, setHubSearch] = useState('');
+  const [routeSearch, setRouteSearch] = useState('');
+  const [selectedHubDetails, setSelectedHubDetails] = useState<HubWithRoutes | null>(null);
 
   useEffect(() => {
     fetchHubRouteData();
@@ -84,20 +88,19 @@ const HubRoutesManagement = () => {
   };
 
   const handleAssignRoute = async () => {
-    if (!selectedHubId || !selectedRouteId) return;
+    if (!selectedHub || !selectedRoute) return;
 
     try {
       const { error } = await supabase
         .from('routes')
-        .update({ hub_id: selectedHubId })
-        .eq('id', selectedRouteId);
+        .update({ hub_id: selectedHub })
+        .eq('id', selectedRoute);
 
       if (error) throw error;
 
       await fetchHubRouteData();
-      setIsAssignDialogOpen(false);
-      setSelectedHubId('');
-      setSelectedRouteId('');
+      setSelectedHub('');
+      setSelectedRoute('');
       
       toast({
         title: "Success",
@@ -138,111 +141,120 @@ const HubRoutesManagement = () => {
     }
   };
 
+  const filteredHubs = hubs.filter(hub =>
+    hub.name.toLowerCase().includes(hubSearch.toLowerCase()) ||
+    hub.address?.toLowerCase().includes(hubSearch.toLowerCase())
+  );
+
+  const filteredUnassignedRoutes = unassignedRoutes.filter(route =>
+    route.name.toLowerCase().includes(routeSearch.toLowerCase()) ||
+    route.start_point.toLowerCase().includes(routeSearch.toLowerCase()) ||
+    route.end_point.toLowerCase().includes(routeSearch.toLowerCase())
+  );
+
   if (loading) {
-    return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 bg-muted rounded-lg w-64"></div>
-        <div className="space-y-4">
-          {[...Array(3)].map((_, i) => (
-            <div key={i} className="h-32 bg-muted rounded-xl"></div>
-          ))}
-        </div>
-      </div>
-    );
+    return <div className="flex items-center justify-center h-64">Loading...</div>;
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-            <Link className="w-8 h-8 text-primary" />
-            Hub Routes Management
-          </h1>
-          <p className="text-muted-foreground">Manage relationships between hubs and routes</p>
-        </div>
-        
-        <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="transport-button-primary" disabled={unassignedRoutes.length === 0}>
-              <Plus className="w-4 h-4 mr-2" />
-              Assign Route to Hub
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle>Assign Route to Hub</DialogTitle>
-              <DialogDescription>
-                Select a hub and an unassigned route to create the relationship
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label htmlFor="hub-select" className="text-sm font-medium">Select Hub</label>
-                <Select value={selectedHubId} onValueChange={setSelectedHubId}>
-                  <SelectTrigger className="transport-input">
-                    <SelectValue placeholder="Choose a hub" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {hubs.map((hub) => (
-                      <SelectItem key={hub.id} value={hub.id}>
-                        {hub.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="route-select" className="text-sm font-medium">Select Route</label>
-                <Select value={selectedRouteId} onValueChange={setSelectedRouteId}>
-                  <SelectTrigger className="transport-input">
-                    <SelectValue placeholder="Choose a route" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {unassignedRoutes.map((route) => (
-                      <SelectItem key={route.id} value={route.id}>
-                        {route.name} ({route.start_point} → {route.end_point})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-2 pt-4">
-                <Button 
-                  onClick={handleAssignRoute}
-                  disabled={!selectedHubId || !selectedRouteId}
-                  className="transport-button-primary flex-1"
-                >
-                  Assign Route
-                </Button>
-                <Button 
-                  variant="outline" 
-                  onClick={() => setIsAssignDialogOpen(false)}
-                  className="transport-button-secondary flex-1"
-                >
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-3xl font-bold">Hub Routes Management</h1>
+        <p className="text-muted-foreground">Manage routes assigned to each hub</p>
       </div>
 
-      {/* Unassigned Routes Section */}
-      {unassignedRoutes.length > 0 && (
-        <Card className="transport-card">
+      {/* Search Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Search & Filter</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="hub-search">Search Hubs</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="hub-search"
+                placeholder="Search hubs..."
+                value={hubSearch}
+                onChange={(e) => setHubSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="route-search">Search Routes</Label>
+            <div className="relative">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="route-search"
+                placeholder="Search routes..."
+                value={routeSearch}
+                onChange={(e) => setRouteSearch(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Assign Route to Hub */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Assign Route to Hub</CardTitle>
+          <CardDescription>Select a hub and route to create the assignment</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <Label>Hub</Label>
+              <Select value={selectedHub} onValueChange={setSelectedHub}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a hub" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredHubs.map((hub) => (
+                    <SelectItem key={hub.id} value={hub.id}>
+                      {hub.name} - {hub.address}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Unassigned Route</Label>
+              <Select value={selectedRoute} onValueChange={setSelectedRoute}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an unassigned route" />
+                </SelectTrigger>
+                <SelectContent>
+                  {filteredUnassignedRoutes.map((route) => (
+                    <SelectItem key={route.id} value={route.id}>
+                      {route.name} ({route.start_point} → {route.end_point})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <Button onClick={handleAssignRoute} disabled={!selectedHub || !selectedRoute}>
+            Assign Route to Hub
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Unassigned Routes */}
+      {filteredUnassignedRoutes.length > 0 && (
+        <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-amber-500" />
-              Unassigned Routes ({unassignedRoutes.length})
-            </CardTitle>
-            <CardDescription>Routes that are not linked to any hub</CardDescription>
+            <CardTitle>Unassigned Routes ({unassignedRoutes.length})</CardTitle>
+            <CardDescription>Routes that are not assigned to any hub</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {unassignedRoutes.map((route) => (
-                <Badge key={route.id} variant="secondary" className="px-3 py-2 text-sm">
-                  {route.name} - {route.transport_type}
+              {filteredUnassignedRoutes.map((route) => (
+                <Badge key={route.id} variant="secondary">
+                  {route.name} ({route.start_point} → {route.end_point})
                 </Badge>
               ))}
             </div>
@@ -250,73 +262,142 @@ const HubRoutesManagement = () => {
         </Card>
       )}
 
-      {/* Hubs with Routes */}
-      <div className="grid gap-6">
-        {hubs.map((hub) => (
-          <Card key={hub.id} className="transport-card">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    {hub.name}
-                  </CardTitle>
-                  <CardDescription>{hub.address}</CardDescription>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                    <span>Transport Type: {hub.transport_type || 'Not specified'}</span>
-                    <span>Routes: {hub.routes.length}</span>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {hub.routes.length === 0 ? (
-                <p className="text-muted-foreground italic">No routes assigned to this hub</p>
-              ) : (
-                <div className="space-y-3">
-                  {hub.routes.map((route) => (
-                    <div 
-                      key={route.id} 
-                      className="flex items-center justify-between p-3 bg-muted rounded-lg hover:bg-muted/80 transition-colors"
-                    >
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3">
-                          <h4 className="font-medium">{route.name}</h4>
-                          <Badge variant="outline" className="transport-badge-route">
-                            {route.transport_type}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {route.start_point} → {route.end_point}
-                        </p>
-                        <p className="text-sm font-medium mt-1">Cost: R{route.cost}</p>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemoveRoute(route.id)}
-                        className="text-destructive hover:text-destructive-foreground hover:bg-destructive/10"
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
+      {/* Hubs List with Details View */}
+      <div className="space-y-4">
+        {filteredHubs.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-center text-muted-foreground">No hubs found</p>
             </CardContent>
           </Card>
-        ))}
-      </div>
+        ) : (
+          filteredHubs.map((hub) => (
+            <Card key={hub.id}>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    {hub.name}
+                    <Badge variant="outline">{hub.transport_type}</Badge>
+                  </CardTitle>
+                  <CardDescription>{hub.address} • {hub.routes.length} routes</CardDescription>
+                </div>
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" onClick={() => setSelectedHubDetails(hub)}>
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>{hub.name} - Hub Details</DialogTitle>
+                      <DialogDescription>
+                        Manage routes for this hub
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+                        <div>
+                          <Label className="text-sm font-medium">Address</Label>
+                          <p className="text-sm text-muted-foreground">{hub.address}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Transport Type</Label>
+                          <Badge variant="outline" className="ml-2">{hub.transport_type}</Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Quick Assign Route in Dialog */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Assign Route to This Hub</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                          <div>
+                            <Label>Unassigned Route</Label>
+                            <Select value={selectedRoute} onValueChange={setSelectedRoute}>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select an unassigned route" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {filteredUnassignedRoutes.map((route) => (
+                                  <SelectItem key={route.id} value={route.id}>
+                                    {route.name} ({route.start_point} → {route.end_point})
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <Button 
+                            onClick={() => {
+                              setSelectedHub(hub.id);
+                              handleAssignRoute();
+                            }}
+                            disabled={!selectedRoute}
+                            className="w-full"
+                          >
+                            <Plus className="h-4 w-4 mr-2" />
+                            Assign Route
+                          </Button>
+                        </CardContent>
+                      </Card>
 
-      {hubs.length === 0 && (
-        <Card className="transport-card">
-          <CardContent className="flex items-center justify-center h-32">
-            <p className="text-muted-foreground">
-              No hubs available. Create some hubs first to manage route relationships.
-            </p>
-          </CardContent>
-        </Card>
-      )}
+                      {/* Routes List */}
+                      <div>
+                        <h3 className="font-semibold mb-3">Assigned Routes ({hub.routes.length})</h3>
+                        {hub.routes.length === 0 ? (
+                          <p className="text-muted-foreground text-center py-8">No routes assigned to this hub</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {hub.routes.map((route) => (
+                              <div key={route.id} className="flex items-center justify-between p-3 border rounded">
+                                <div>
+                                  <span className="font-medium">{route.name}</span>
+                                  <p className="text-sm text-muted-foreground">
+                                    {route.start_point} → {route.end_point}
+                                  </p>
+                                </div>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleRemoveRoute(route.id)}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-medium">Assigned Routes ({hub.routes.length})</h4>
+                  </div>
+                  {hub.routes.length === 0 ? (
+                    <p className="text-muted-foreground">No routes assigned to this hub</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {hub.routes.slice(0, 3).map((route) => (
+                        <Badge key={route.id} variant="outline">
+                          {route.name}
+                        </Badge>
+                      ))}
+                      {hub.routes.length > 3 && (
+                        <Badge variant="secondary">+{hub.routes.length - 3} more</Badge>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   );
 };

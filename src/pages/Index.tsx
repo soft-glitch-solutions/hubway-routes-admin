@@ -12,6 +12,8 @@ import ProfileManagement from '@/components/ProfileManagement';
 import UsersManagement from '@/components/UsersManagement';
 import RouteStopsManagement from '@/components/RouteStopsManagement';
 import HubRoutesManagement from '@/components/HubRoutesManagement';
+import BlogsManagement from '@/components/BlogsManagement';
+import DocumentationManagement from '@/components/DocumentationManagement';
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
