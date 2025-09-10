@@ -1,7 +1,35 @@
-import React, { useEffect, useRef, useState } from 'react';
-import mapboxgl from 'mapbox-gl';
+import React, { useEffect, useState } from 'react';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import L from 'leaflet';
 import { supabase } from '@/integrations/supabase/client';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for default markers in react-leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Create custom icons
+const hubIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41]
+});
+
+const stopIcon = new L.Icon({
+  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+  iconSize: [20, 32],
+  iconAnchor: [10, 32],
+  popupAnchor: [1, -27],
+  shadowSize: [32, 32]
+});
 
 interface Hub {
   id: string;
@@ -19,8 +47,6 @@ interface Stop {
 }
 
 const TransportMap = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
   const [hubs, setHubs] = useState<Hub[]>([]);
   const [stops, setStops] = useState<Stop[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,72 +71,6 @@ const TransportMap = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (!mapContainer.current || loading) return;
-
-    // For now, use a placeholder token - this should be replaced with actual Mapbox token
-    mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
-    
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: [22.9375, -30.5595], // Center of South Africa
-      zoom: 5.5,
-    });
-
-    // Add navigation controls
-    map.current.addControl(
-      new mapboxgl.NavigationControl({
-        visualizePitch: true,
-      }),
-      'top-right'
-    );
-
-    map.current.on('load', () => {
-      // Add hubs to map
-      hubs.forEach((hub) => {
-        const popup = new mapboxgl.Popup({ offset: 15 }).setHTML(
-          `<div class="p-2">
-            <h3 class="font-semibold text-sm">${hub.name}</h3>
-            <p class="text-xs text-gray-600">Hub</p>
-            ${hub.address ? `<p class="text-xs">${hub.address}</p>` : ''}
-          </div>`
-        );
-
-        new mapboxgl.Marker({
-          color: '#ef4444', // Red for hubs
-          scale: 1.2
-        })
-          .setLngLat([hub.longitude, hub.latitude])
-          .setPopup(popup)
-          .addTo(map.current!);
-      });
-
-      // Add stops to map
-      stops.forEach((stop) => {
-        const popup = new mapboxgl.Popup({ offset: 15 }).setHTML(
-          `<div class="p-2">
-            <h3 class="font-semibold text-sm">${stop.name}</h3>
-            <p class="text-xs text-gray-600">Stop</p>
-          </div>`
-        );
-
-        new mapboxgl.Marker({
-          color: '#3b82f6', // Blue for stops
-          scale: 0.8
-        })
-          .setLngLat([stop.longitude, stop.latitude])
-          .setPopup(popup)
-          .addTo(map.current!);
-      });
-    });
-
-    // Cleanup
-    return () => {
-      map.current?.remove();
-    };
-  }, [hubs, stops, loading]);
-
   if (loading) {
     return (
       <div className="h-96 bg-muted rounded-lg flex items-center justify-center">
@@ -124,7 +84,51 @@ const TransportMap = () => {
 
   return (
     <div className="relative">
-      <div ref={mapContainer} className="h-96 rounded-lg shadow-lg" />
+      <MapContainer
+        center={[-30.5595, 22.9375]} // Center of South Africa [lat, lng]
+        zoom={6}
+        style={{ height: '384px', width: '100%' }}
+        className="rounded-lg shadow-lg"
+      >
+        <TileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        />
+        
+        {/* Render hubs */}
+        {hubs.map((hub) => (
+          <Marker
+            key={hub.id}
+            position={[hub.latitude, hub.longitude]}
+            icon={hubIcon}
+          >
+            <Popup>
+              <div className="p-2">
+                <h3 className="font-semibold text-sm">{hub.name}</h3>
+                <p className="text-xs text-muted-foreground">Hub</p>
+                {hub.address && <p className="text-xs">{hub.address}</p>}
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+
+        {/* Render stops */}
+        {stops.map((stop) => (
+          <Marker
+            key={stop.id}
+            position={[stop.latitude, stop.longitude]}
+            icon={stopIcon}
+          >
+            <Popup>
+              <div className="p-2">
+                <h3 className="font-semibold text-sm">{stop.name}</h3>
+                <p className="text-xs text-muted-foreground">Stop</p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+      </MapContainer>
+      
       <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border">
         <div className="flex items-center gap-4 text-sm">
           <div className="flex items-center gap-2">
