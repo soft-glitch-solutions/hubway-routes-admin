@@ -7,9 +7,12 @@ import VectorSource from 'ol/source/Vector';
 import Feature from 'ol/Feature';
 import Point from 'ol/geom/Point';
 import { fromLonLat } from 'ol/proj';
-import { Style, Circle, Fill, Stroke } from 'ol/style';
+import { Style, Circle, Fill, Stroke, Icon } from 'ol/style';
 import Overlay from 'ol/Overlay';
 import { supabase } from '@/integrations/supabase/client';
+import { Button } from '@/components/ui/button';
+import { MapPin, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import 'ol/ol.css';
 
 interface Hub {
@@ -31,6 +34,8 @@ const TransportMap = () => {
   const [hubs, setHubs] = useState<Hub[]>([]);
   const [stops, setStops] = useState<Stop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [locatingUser, setLocatingUser] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstance = useRef<Map | null>(null);
   const popupRef = useRef<HTMLDivElement>(null);
@@ -77,6 +82,14 @@ const TransportMap = () => {
     })
   });
 
+  const userLocationStyle = new Style({
+    image: new Circle({
+      radius: 10,
+      fill: new Fill({ color: '#4CAF50' }),
+      stroke: new Stroke({ color: '#2E7D32', width: 3 })
+    })
+  });
+
   // Create features for hubs and stops
   const hubFeatures = useMemo(() => {
     return hubs.map((hub) => {
@@ -101,6 +114,72 @@ const TransportMap = () => {
       return feature;
     });
   }, [stops, stopStyle]);
+
+  // Create user location feature
+  const userLocationFeature = useMemo(() => {
+    if (!userLocation) return null;
+    
+    const feature = new Feature({
+      geometry: new Point(fromLonLat([userLocation.lng, userLocation.lat])),
+      type: 'user_location',
+      data: { name: 'Your Location' }
+    });
+    feature.setStyle(userLocationStyle);
+    return feature;
+  }, [userLocation, userLocationStyle]);
+
+  // Function to get user location
+  const getUserLocation = () => {
+    if (!navigator.geolocation) {
+      toast.error('Geolocation is not supported by this browser');
+      return;
+    }
+
+    setLocatingUser(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setUserLocation({ lat: latitude, lng: longitude });
+        
+        // Zoom to user location
+        if (mapInstance.current) {
+          const view = mapInstance.current.getView();
+          view.animate({
+            center: fromLonLat([longitude, latitude]),
+            zoom: 14,
+            duration: 1000
+          });
+        }
+        
+        setLocatingUser(false);
+        toast.success('Location found!');
+      },
+      (error) => {
+        setLocatingUser(false);
+        console.error('Error getting location:', error);
+        
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            toast.error('Location access denied. Please enable location permissions.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            toast.error('Location information unavailable.');
+            break;
+          case error.TIMEOUT:
+            toast.error('Location request timed out.');
+            break;
+          default:
+            toast.error('An unknown error occurred while getting location.');
+            break;
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+      }
+    );
+  };
 
   useEffect(() => {
     if (!mapRef.current || loading) return;
@@ -127,6 +206,10 @@ const TransportMap = () => {
         features: stopFeatures
       });
 
+      const userLocationSource = new VectorSource({
+        features: userLocationFeature ? [userLocationFeature] : []
+      });
+
       // Create vector layers
       const hubLayer = new VectorLayer({
         source: hubSource
@@ -134,6 +217,10 @@ const TransportMap = () => {
 
       const stopLayer = new VectorLayer({
         source: stopSource
+      });
+
+      const userLocationLayer = new VectorLayer({
+        source: userLocationSource
       });
 
       // Create map
@@ -145,7 +232,8 @@ const TransportMap = () => {
               source: new OSM()
             }),
             hubLayer,
-            stopLayer
+            stopLayer,
+            userLocationLayer
           ],
           view: new View({
             center: fromLonLat([22.9375, -30.5595]), // South Africa [lng, lat]
@@ -178,6 +266,13 @@ const TransportMap = () => {
                     ${data.address ? `<p class="text-xs">${data.address}</p>` : ''}
                   </div>
                 `;
+              } else if (type === 'user_location') {
+                popupRef.current.innerHTML = `
+                  <div class="p-2 bg-background border rounded shadow-lg">
+                    <h3 class="font-semibold text-sm">📍 ${data.name}</h3>
+                    <p class="text-xs text-muted-foreground">Current Location</p>
+                  </div>
+                `;
               } else {
                 popupRef.current.innerHTML = `
                   <div class="p-2 bg-background border rounded shadow-lg">
@@ -196,10 +291,12 @@ const TransportMap = () => {
       } else {
         // Update existing layers
         const layers = mapInstance.current.getLayers();
-        layers.removeAt(2); // Remove old stop layer
+        layers.removeAt(3); // Remove old user location layer
+        layers.removeAt(2); // Remove old stop layer  
         layers.removeAt(1); // Remove old hub layer
         layers.insertAt(1, hubLayer);
         layers.insertAt(2, stopLayer);
+        layers.insertAt(3, userLocationLayer);
       }
     } catch (error) {
       console.error('Map initialization error:', error);
@@ -211,7 +308,7 @@ const TransportMap = () => {
         mapInstance.current = null;
       }
     };
-  }, [hubFeatures, stopFeatures, loading]);
+  }, [hubFeatures, stopFeatures, userLocationFeature, loading]);
 
   if (loading) {
     return (
@@ -234,6 +331,24 @@ const TransportMap = () => {
         />
         <div ref={popupRef} className="ol-popup" />
         
+        {/* Find My Location Button */}
+        <div className="absolute top-4 right-4">
+          <Button 
+            onClick={getUserLocation}
+            disabled={locatingUser}
+            size="sm"
+            variant="outline"
+            className="bg-background/90 backdrop-blur-sm shadow-lg"
+          >
+            {locatingUser ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MapPin className="h-4 w-4" />
+            )}
+            {locatingUser ? 'Finding...' : 'Find Me'}
+          </Button>
+        </div>
+        
         <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border">
           <div className="flex items-center gap-4 text-sm">
             <div className="flex items-center gap-2">
@@ -244,6 +359,12 @@ const TransportMap = () => {
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
               <span>Stops ({stops.length})</span>
             </div>
+            {userLocation && (
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                <span>You</span>
+              </div>
+            )}
           </div>
         </div>
       </div>

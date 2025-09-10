@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Users, Search, Ban, Trash2, Eye, MessageCircle, MapPin } from 'lucide-react';
+import { Users, Search, Ban, Trash2, Eye, MessageCircle, MapPin, RotateCcw, Copy } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -24,6 +24,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface Profile {
   id: string;
@@ -31,6 +42,10 @@ interface Profile {
   last_name: string | null;
   points: number;
   selected_title: string | null;
+}
+
+interface UserWithEmail extends Profile {
+  email?: string;
 }
 
 interface HubPost {
@@ -55,12 +70,13 @@ interface StopPost {
 }
 
 const UsersManagement = () => {
-  const [profiles, setProfiles] = useState<Profile[]>([]);
+  const [profiles, setProfiles] = useState<UserWithEmail[]>([]);
   const [hubPosts, setHubPosts] = useState<HubPost[]>([]);
   const [stopPosts, setStopPosts] = useState<StopPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPost, setSelectedPost] = useState<(HubPost | StopPost) | null>(null);
+  const [resettingPassword, setResettingPassword] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -70,13 +86,35 @@ const UsersManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const { data, error } = await supabase
+      // First get profiles
+      const { data: profilesData, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
         .order('first_name');
 
-      if (error) throw error;
-      setProfiles(data || []);
+      if (profilesError) throw profilesError;
+
+      // Get user emails from auth.users using a function call if available
+      // For now, we'll enhance profiles with email using get_user_email function
+      const profilesWithEmail = [];
+      if (profilesData) {
+        for (const profile of profilesData) {
+          try {
+            const { data: emailData } = await supabase.rpc('get_user_email', { 
+              user_id: profile.id 
+            });
+            profilesWithEmail.push({
+              ...profile,
+              email: emailData
+            });
+          } catch (error) {
+            console.warn(`Could not get email for user ${profile.id}:`, error);
+            profilesWithEmail.push(profile);
+          }
+        }
+      }
+
+      setProfiles(profilesWithEmail || []);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast({
@@ -150,6 +188,48 @@ const UsersManagement = () => {
         description: "Failed to delete post.",
         variant: "destructive",
       });
+    }
+  };
+
+  const resetUserPassword = async (userId: string, userEmail: string) => {
+    if (!userEmail) {
+      toast({
+        title: "Error",
+        description: "User email not available for password reset.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setResettingPassword(userId);
+    
+    try {
+      // Call edge function to reset password
+      const { data, error } = await supabase.functions.invoke('reset-user-password', {
+        body: { userId, email: userEmail }
+      });
+
+      if (error) throw error;
+
+      const tempPassword = data.temporaryPassword;
+      
+      // Copy to clipboard
+      await navigator.clipboard.writeText(tempPassword);
+      
+      toast({
+        title: "Password Reset Successful",
+        description: `Temporary password: ${tempPassword} (copied to clipboard)`,
+      });
+      
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      toast({
+        title: "Error",
+        description: "Failed to reset user password.",
+        variant: "destructive",
+      });
+    } finally {
+      setResettingPassword(null);
     }
   };
 
@@ -238,14 +318,47 @@ const UsersManagement = () => {
                           <Badge variant="outline">{profile.selected_title || 'Newbie Explorer'}</Badge>
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            className="text-xs"
-                          >
-                            <Ban className="w-3 h-3 mr-1" />
-                            Ban User
-                          </Button>
+                          <div className="flex gap-2">
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="text-xs"
+                                  disabled={resettingPassword === profile.id}
+                                >
+                                  <RotateCcw className="w-3 h-3 mr-1" />
+                                  Reset Password
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Reset User Password</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This will generate a new temporary password for {profile.first_name} {profile.last_name}. The password will be shown and copied to your clipboard.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => resetUserPassword(profile.id, profile.email || '')}
+                                    disabled={!profile.email}
+                                  >
+                                    Reset Password
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                            
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              className="text-xs"
+                            >
+                              <Ban className="w-3 h-3 mr-1" />
+                              Ban User
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
