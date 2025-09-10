@@ -85,7 +85,7 @@ const TransportMap = () => {
   return (
     <div className="relative">
       <MapContainer
-        center={[-30.5595, 22.9375]} // Center of South Africa [lat, lng]
+        center={[-30.5595, 22.9375]}
         zoom={6}
         style={{ height: '384px', width: '100%' }}
         className="rounded-lg shadow-lg"
@@ -95,10 +95,9 @@ const TransportMap = () => {
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
         
-        {/* Render hubs */}
-        {hubs.map((hub) => (
+        {hubs.length > 0 && hubs.map((hub) => (
           <Marker
-            key={hub.id}
+            key={`hub-${hub.id}`}
             position={[hub.latitude, hub.longitude]}
             icon={hubIcon}
           >
@@ -112,10 +111,9 @@ const TransportMap = () => {
           </Marker>
         ))}
 
-        {/* Render stops */}
-        {stops.map((stop) => (
+        {stops.length > 0 && stops.map((stop) => (
           <Marker
-            key={stop.id}
+            key={`stop-${stop.id}`}
             position={[stop.latitude, stop.longitude]}
             icon={stopIcon}
           >
