@@ -1,35 +1,16 @@
-import React, { useEffect, useState, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import L from 'leaflet';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
+import { Map, View } from 'ol';
+import TileLayer from 'ol/layer/Tile';
+import OSM from 'ol/source/OSM';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
+import Feature from 'ol/Feature';
+import Point from 'ol/geom/Point';
+import { fromLonLat } from 'ol/proj';
+import { Style, Circle, Fill, Stroke } from 'ol/style';
+import Overlay from 'ol/Overlay';
 import { supabase } from '@/integrations/supabase/client';
-import 'leaflet/dist/leaflet.css';
-
-// Fix for default markers in react-leaflet
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-// Create custom icons
-const hubIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-red.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
-
-const stopIcon = new L.Icon({
-  iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-blue.png',
-  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-  iconSize: [20, 32],
-  iconAnchor: [10, 32],
-  popupAnchor: [1, -27],
-  shadowSize: [32, 32]
-});
+import 'ol/ol.css';
 
 interface Hub {
   id: string;
@@ -50,6 +31,10 @@ const TransportMap = () => {
   const [hubs, setHubs] = useState<Hub[]>([]);
   const [stops, setStops] = useState<Stop[]>([]);
   const [loading, setLoading] = useState(true);
+  const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<Map | null>(null);
+  const popupRef = useRef<HTMLDivElement>(null);
+  const overlayRef = useRef<Overlay | null>(null);
 
   console.log('TransportMap render:', { hubsLength: hubs.length, stopsLength: stops.length, loading });
 
@@ -75,41 +60,158 @@ const TransportMap = () => {
     fetchData();
   }, []);
 
-  // Memoize markers to prevent re-rendering issues
-  const hubMarkers = useMemo(() => {
-    return hubs.map((hub) => (
-      <Marker
-        key={`hub-${hub.id}`}
-        position={[hub.latitude, hub.longitude]}
-        icon={hubIcon}
-      >
-        <Popup>
-          <div className="p-2">
-            <h3 className="font-semibold text-sm">{hub.name}</h3>
-            <p className="text-xs text-muted-foreground">Hub</p>
-            {hub.address && <p className="text-xs">{hub.address}</p>}
-          </div>
-        </Popup>
-      </Marker>
-    ));
-  }, [hubs]);
+  // Create styles for markers
+  const hubStyle = new Style({
+    image: new Circle({
+      radius: 8,
+      fill: new Fill({ color: 'red' }),
+      stroke: new Stroke({ color: 'darkred', width: 2 })
+    })
+  });
 
-  const stopMarkers = useMemo(() => {
-    return stops.map((stop) => (
-      <Marker
-        key={`stop-${stop.id}`}
-        position={[stop.latitude, stop.longitude]}
-        icon={stopIcon}
-      >
-        <Popup>
-          <div className="p-2">
-            <h3 className="font-semibold text-sm">{stop.name}</h3>
-            <p className="text-xs text-muted-foreground">Stop</p>
-          </div>
-        </Popup>
-      </Marker>
-    ));
-  }, [stops]);
+  const stopStyle = new Style({
+    image: new Circle({
+      radius: 6,
+      fill: new Fill({ color: 'blue' }),
+      stroke: new Stroke({ color: 'darkblue', width: 2 })
+    })
+  });
+
+  // Create features for hubs and stops
+  const hubFeatures = useMemo(() => {
+    return hubs.map((hub) => {
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([hub.longitude, hub.latitude])),
+        type: 'hub',
+        data: hub
+      });
+      feature.setStyle(hubStyle);
+      return feature;
+    });
+  }, [hubs, hubStyle]);
+
+  const stopFeatures = useMemo(() => {
+    return stops.map((stop) => {
+      const feature = new Feature({
+        geometry: new Point(fromLonLat([stop.longitude, stop.latitude])),
+        type: 'stop',
+        data: stop
+      });
+      feature.setStyle(stopStyle);
+      return feature;
+    });
+  }, [stops, stopStyle]);
+
+  useEffect(() => {
+    if (!mapRef.current || loading) return;
+
+    try {
+      // Create popup overlay
+      if (popupRef.current && !overlayRef.current) {
+        overlayRef.current = new Overlay({
+          element: popupRef.current,
+          autoPan: {
+            animation: {
+              duration: 250,
+            },
+          },
+        });
+      }
+
+      // Create vector sources
+      const hubSource = new VectorSource({
+        features: hubFeatures
+      });
+
+      const stopSource = new VectorSource({
+        features: stopFeatures
+      });
+
+      // Create vector layers
+      const hubLayer = new VectorLayer({
+        source: hubSource
+      });
+
+      const stopLayer = new VectorLayer({
+        source: stopSource
+      });
+
+      // Create map
+      if (!mapInstance.current) {
+        mapInstance.current = new Map({
+          target: mapRef.current,
+          layers: [
+            new TileLayer({
+              source: new OSM()
+            }),
+            hubLayer,
+            stopLayer
+          ],
+          view: new View({
+            center: fromLonLat([22.9375, -30.5595]), // South Africa [lng, lat]
+            zoom: 6
+          })
+        });
+
+        // Add popup overlay
+        if (overlayRef.current) {
+          mapInstance.current.addOverlay(overlayRef.current);
+        }
+
+        // Add click handler for popups
+        mapInstance.current.on('click', (event) => {
+          const feature = mapInstance.current?.forEachFeatureAtPixel(event.pixel, (feature) => feature);
+          
+          if (feature && overlayRef.current && popupRef.current) {
+            const data = feature.get('data');
+            const type = feature.get('type');
+            const geometry = feature.getGeometry() as Point;
+            const coordinates = geometry?.getCoordinates();
+            
+            if (data && coordinates) {
+              // Update popup content
+              if (type === 'hub') {
+                popupRef.current.innerHTML = `
+                  <div class="p-2 bg-background border rounded shadow-lg">
+                    <h3 class="font-semibold text-sm">${data.name}</h3>
+                    <p class="text-xs text-muted-foreground">Hub</p>
+                    ${data.address ? `<p class="text-xs">${data.address}</p>` : ''}
+                  </div>
+                `;
+              } else {
+                popupRef.current.innerHTML = `
+                  <div class="p-2 bg-background border rounded shadow-lg">
+                    <h3 class="font-semibold text-sm">${data.name}</h3>
+                    <p class="text-xs text-muted-foreground">Stop</p>
+                  </div>
+                `;
+              }
+              
+              overlayRef.current.setPosition(coordinates);
+            }
+          } else if (overlayRef.current) {
+            overlayRef.current.setPosition(undefined);
+          }
+        });
+      } else {
+        // Update existing layers
+        const layers = mapInstance.current.getLayers();
+        layers.removeAt(2); // Remove old stop layer
+        layers.removeAt(1); // Remove old hub layer
+        layers.insertAt(1, hubLayer);
+        layers.insertAt(2, stopLayer);
+      }
+    } catch (error) {
+      console.error('Map initialization error:', error);
+    }
+
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.setTarget(undefined);
+        mapInstance.current = null;
+      }
+    };
+  }, [hubFeatures, stopFeatures, loading]);
 
   if (loading) {
     return (
@@ -125,20 +227,12 @@ const TransportMap = () => {
   try {
     return (
       <div className="relative">
-        <MapContainer
-          center={[-30.5595, 22.9375]}
-          zoom={6}
-          style={{ height: '384px', width: '100%' }}
-          className="rounded-lg shadow-lg"
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          {/* Render all markers without conditional checks inside MapContainer */}
-          {hubMarkers}
-          {stopMarkers}
-        </MapContainer>
+        <div 
+          ref={mapRef} 
+          className="h-96 w-full rounded-lg shadow-lg"
+          style={{ height: '384px' }}
+        />
+        <div ref={popupRef} className="ol-popup" />
         
         <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg p-3 shadow-lg border">
           <div className="flex items-center gap-4 text-sm">
