@@ -110,6 +110,15 @@ const AuthForm = () => {
                   </>
                 )}
               </Button>
+              
+              <div className="text-center">
+                <a
+                  href="/reset-password"
+                  className="text-sm text-muted-foreground hover:text-foreground underline"
+                >
+                  Forgot your password?
+                </a>
+              </div>
             </form>
           </CardContent>
         </Card>

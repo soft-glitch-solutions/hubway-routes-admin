@@ -67,6 +67,10 @@ const Index = () => {
         return <HubRoutesManagement />;
       case 'nearby-spots':
         return <NearbySpotsManagement />;
+      case 'blogs':
+        return <BlogsManagement />;
+      case 'documentation':
+        return <DocumentationManagement />;
       case 'users':
         return <UsersManagement />;
       case 'profile':
