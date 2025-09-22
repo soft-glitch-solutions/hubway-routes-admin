@@ -29,7 +29,7 @@ jobs:
       - name: Deploy to Production
         run: |
           echo "${{ secrets.FTP_PASSWORD }}" > /tmp/password
-          sshpass -f /tmp/password sftp -oPort=1624 -oStrictHostKeyChecking=no bpyshwey@102.212.247.146 <<EOF
+          sshpass -f /tmp/password sftp -oPort=1624 -oStrictHostKeyChecking=no bpyshwey@51.89.20.167 <<EOF
           cd /home/bpyshwey/portal.uthutho.co.za
           lcd dist
           put -r *
