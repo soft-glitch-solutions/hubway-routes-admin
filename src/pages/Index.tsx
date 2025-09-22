@@ -14,6 +14,9 @@ import RouteStopsManagement from '@/components/RouteStopsManagement';
 import HubRoutesManagement from '@/components/HubRoutesManagement';
 import BlogsManagement from '@/components/BlogsManagement';
 import DocumentationManagement from '@/components/DocumentationManagement';
+import StopWaitingManagement from '@/components/StopWaitingManagement';
+import JourneysManagement from '@/components/JourneysManagement';
+import JourneyMessagesManagement from '@/components/JourneyMessagesManagement';
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -65,6 +68,12 @@ const Index = () => {
         return <RouteStopsManagement />;
       case 'hub-routes':
         return <HubRoutesManagement />;
+      case 'stop-waiting':
+        return <StopWaitingManagement />;
+      case 'journeys':
+        return <JourneysManagement />;
+      case 'journey-messages':
+        return <JourneyMessagesManagement />;
       case 'nearby-spots':
         return <NearbySpotsManagement />;
       case 'blogs':
