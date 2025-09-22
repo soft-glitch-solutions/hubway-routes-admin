@@ -6,7 +6,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Navigation, Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Navigation, Plus, Edit, Trash2, Search, Map } from 'lucide-react';
+import MapSelector from './MapSelector';
 
 interface Stop {
   id: string;
@@ -35,6 +36,7 @@ const StopsManagement = () => {
     cost: '',
     order_number: '',
   });
+  const [showMapSelector, setShowMapSelector] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -182,6 +184,15 @@ const StopsManagement = () => {
       cost: '',
       order_number: '',
     });
+    setShowMapSelector(false);
+  };
+
+  const handleLocationSelect = (lat: number, lng: number) => {
+    setFormData({
+      ...formData,
+      latitude: lat.toString(),
+      longitude: lng.toString(),
+    });
   };
 
   const filteredStops = stops.filter(stop =>
@@ -238,30 +249,55 @@ const StopsManagement = () => {
                   className="transport-input"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="latitude">Latitude</Label>
-                  <Input
-                    id="latitude"
-                    type="number"
-                    step="any"
-                    value={formData.latitude}
-                    onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-                    required
-                    className="transport-input"
-                  />
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label>Location</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowMapSelector(!showMapSelector)}
+                    className="transport-button-secondary"
+                  >
+                    <Map className="w-4 h-4 mr-1" />
+                    {showMapSelector ? 'Hide Map' : 'Select on Map'}
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="longitude">Longitude</Label>
-                  <Input
-                    id="longitude"
-                    type="number"
-                    step="any"
-                    value={formData.longitude}
-                    onChange={(e) => setFormData({...formData, longitude: e.target.value})}
-                    required
-                    className="transport-input"
+                
+                {showMapSelector && (
+                  <MapSelector
+                    onLocationSelect={handleLocationSelect}
+                    initialLat={formData.latitude ? parseFloat(formData.latitude) : undefined}
+                    initialLng={formData.longitude ? parseFloat(formData.longitude) : undefined}
+                    height="300px"
                   />
+                )}
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="latitude">Latitude</Label>
+                    <Input
+                      id="latitude"
+                      type="number"
+                      step="any"
+                      value={formData.latitude}
+                      onChange={(e) => setFormData({...formData, latitude: e.target.value})}
+                      required
+                      className="transport-input"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="longitude">Longitude</Label>
+                    <Input
+                      id="longitude"
+                      type="number"
+                      step="any"
+                      value={formData.longitude}
+                      onChange={(e) => setFormData({...formData, longitude: e.target.value})}
+                      required
+                      className="transport-input"
+                    />
+                  </div>
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -403,30 +439,55 @@ const StopsManagement = () => {
                 className="transport-input"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-latitude">Latitude</Label>
-                <Input
-                  id="edit-latitude"
-                  type="number"
-                  step="any"
-                  value={formData.latitude}
-                  onChange={(e) => setFormData({...formData, latitude: e.target.value})}
-                  required
-                  className="transport-input"
-                />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label>Location</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowMapSelector(!showMapSelector)}
+                  className="transport-button-secondary"
+                >
+                  <Map className="w-4 h-4 mr-1" />
+                  {showMapSelector ? 'Hide Map' : 'Select on Map'}
+                </Button>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-longitude">Longitude</Label>
-                <Input
-                  id="edit-longitude"
-                  type="number"
-                  step="any"
-                  value={formData.longitude}
-                  onChange={(e) => setFormData({...formData, longitude: e.target.value})}
-                  required
-                  className="transport-input"
+              
+              {showMapSelector && (
+                <MapSelector
+                  onLocationSelect={handleLocationSelect}
+                  initialLat={formData.latitude ? parseFloat(formData.latitude) : undefined}
+                  initialLng={formData.longitude ? parseFloat(formData.longitude) : undefined}
+                  height="300px"
                 />
+              )}
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-latitude">Latitude</Label>
+                  <Input
+                    id="edit-latitude"
+                    type="number"
+                    step="any"
+                    value={formData.latitude}
+                    onChange={(e) => setFormData({...formData, latitude: e.target.value})}
+                    required
+                    className="transport-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-longitude">Longitude</Label>
+                  <Input
+                    id="edit-longitude"
+                    type="number"
+                    step="any"
+                    value={formData.longitude}
+                    onChange={(e) => setFormData({...formData, longitude: e.target.value})}
+                    required
+                    className="transport-input"
+                  />
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
