@@ -23,16 +23,14 @@ jobs:
       - name: Build the app
         run: npm run build
 
-      - name: Install sshpass
-        run: sudo apt-get update && sudo apt-get install -y sshpass
-
-      - name: Deploy to Production
-        run: |
-          echo "${{ secrets.FTP_PASSWORD }}" > /tmp/password
-          sshpass -f /tmp/password sftp -oPort=1624 -oStrictHostKeyChecking=no shaqeel@uthutho.co.za@51.89.20.167 <<EOF
-          cd /home/bpyshwey/portal.uthutho.co.za
-          lcd dist
-          put -r *
-          quit
-          EOF
-          rm /tmp/password
+      - name: Deploy to cPanel via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftp
+          port: ${{ secrets.FTP_PORT }}
+          local-dir: dist/  # This is your build directory
+          server-dir: /portal.uthutho.co.za/  # Change this if needed
+          cleanup: true  # Remove old files before uploading
