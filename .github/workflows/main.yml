@@ -1,14 +1,13 @@
-name: Deploy via FTP
+name: Deploy via SFTP
 
 on:
   push:
     branches:
-      - main  # Deploy when pushing to the main branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -16,7 +15,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'  # Updated from 16 to 20 to match required engines
+          node-version: '20'
 
       - name: Install dependencies
         run: npm install
@@ -24,14 +23,16 @@ jobs:
       - name: Build the app
         run: npm run build
 
-      - name: Deploy to cPanel via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          protocol: ftp
-          port: ${{ secrets.FTP_PORT }}
-          local-dir: dist/  # This is your build directory
-          server-dir: /portal.uthutho.co.za/  # Change this if needed
-          cleanup: true  # Remove old files before uploading
+      - name: Install sshpass
+        run: sudo apt-get update && sudo apt-get install -y sshpass
+
+      - name: Deploy to Production
+        run: |
+          echo "${{ secrets.FTP_PASSWORD }}" > /tmp/password
+          sshpass -f /tmp/password sftp -oPort=1624 -oStrictHostKeyChecking=no bpyshwey@102.212.247.146 <<EOF
+          cd /home/bpyshwey/portal.uthutho.co.za
+          lcd dist
+          put -r *
+          quit
+          EOF
+          rm /tmp/password
