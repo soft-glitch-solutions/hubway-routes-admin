@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -16,6 +17,7 @@ interface RouteData {
   transport_type: string;
   cost: number;
   hub_id: string | null;
+  instructions: string | null;
 }
 
 interface Hub {
@@ -39,6 +41,7 @@ const RouteForm = ({ route, onSuccess, onCancel }: RouteFormProps) => {
     transport_type: '',
     cost: '',
     hub_id: '',
+    instructions: '',
   });
   const { toast } = useToast();
 
@@ -52,6 +55,7 @@ const RouteForm = ({ route, onSuccess, onCancel }: RouteFormProps) => {
         transport_type: route.transport_type,
         cost: route.cost.toString(),
         hub_id: route.hub_id || '',
+        instructions: route.instructions || '',
       });
     }
   }, [route]);
@@ -82,6 +86,7 @@ const RouteForm = ({ route, onSuccess, onCancel }: RouteFormProps) => {
         transport_type: formData.transport_type,
         cost: parseFloat(formData.cost),
         hub_id: formData.hub_id === 'none' ? null : formData.hub_id || null,
+        instructions: formData.instructions || null,
       };
 
       let error;
@@ -206,8 +211,18 @@ const RouteForm = ({ route, onSuccess, onCancel }: RouteFormProps) => {
             </Select>
           </div>
         </div>
+        <div className="space-y-2">
+          <Label htmlFor="instructions">Special Instructions (Optional)</Label>
+          <Textarea
+            id="instructions"
+            value={formData.instructions}
+            onChange={(e) => setFormData({...formData, instructions: e.target.value})}
+            placeholder="e.g., Student card required, Workers only, Special requirements..."
+            className="transport-input min-h-[80px]"
+          />
+        </div>
         <div className="flex gap-2">
-          <Button 
+          <Button
             type="submit" 
             className="transport-button-primary flex-1"
             disabled={loading}

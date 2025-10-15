@@ -17,6 +17,7 @@ interface RouteData {
   transport_type: string;
   cost: number;
   hub_id: string | null;
+  instructions: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -42,7 +43,7 @@ const RoutesManagement = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      setRoutes(data || []);
+      setRoutes((data as any) || []);
     } catch (error) {
       console.error('Error fetching routes:', error);
       toast({
@@ -207,6 +208,12 @@ const RoutesManagement = () => {
                     <p className="font-medium">{new Date(route.created_at).toLocaleDateString()}</p>
                   </div>
                 </div>
+                {route.instructions && (
+                  <div className="mt-4 pt-4 border-t">
+                    <p className="text-muted-foreground text-sm mb-1">Special Instructions</p>
+                    <p className="text-sm">{route.instructions}</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))
