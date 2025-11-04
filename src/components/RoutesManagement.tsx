@@ -8,7 +8,7 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Route, Plus, Edit, Trash2, Search } from 'lucide-react';
+import { Route, Plus, Edit, Trash2, Search, GitCompare } from 'lucide-react';
 import RouteForm from './RouteForm';
 
 interface RouteData {
@@ -34,6 +34,7 @@ const RoutesManagement = () => {
   const [selectedRoute, setSelectedRoute] = useState<RouteData | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -140,6 +141,69 @@ const RoutesManagement = () => {
 
   const uniqueTransportTypes = Array.from(new Set(routes.map(r => r.transport_type).filter(Boolean)));
 
+  // String similarity calculation (Levenshtein distance based)
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    const longer = str1.length > str2.length ? str1 : str2;
+    const shorter = str1.length > str2.length ? str2 : str1;
+    
+    if (longer.length === 0) return 1.0;
+    
+    const editDistance = (s1: string, s2: string): number => {
+      s1 = s1.toLowerCase();
+      s2 = s2.toLowerCase();
+      
+      const costs = [];
+      for (let i = 0; i <= s1.length; i++) {
+        let lastValue = i;
+        for (let j = 0; j <= s2.length; j++) {
+          if (i === 0) {
+            costs[j] = j;
+          } else if (j > 0) {
+            let newValue = costs[j - 1];
+            if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
+              newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+            }
+            costs[j - 1] = lastValue;
+            lastValue = newValue;
+          }
+        }
+        if (i > 0) costs[s2.length] = lastValue;
+      }
+      return costs[s2.length];
+    };
+    
+    return (longer.length - editDistance(longer, shorter)) / longer.length;
+  };
+
+  // Find similar routes
+  const findSimilarRoutes = () => {
+    const similarGroups: RouteData[][] = [];
+    const processed = new Set<string>();
+
+    routes.forEach((route) => {
+      if (processed.has(route.id)) return;
+
+      const similar = routes.filter(r => {
+        if (r.id === route.id || processed.has(r.id)) return false;
+        
+        const nameSimilarity = calculateSimilarity(route.name, r.name);
+        const sameStartEnd = route.start_point === r.start_point && route.end_point === r.end_point;
+        
+        return nameSimilarity > 0.7 || sameStartEnd;
+      });
+
+      if (similar.length > 0) {
+        const group = [route, ...similar];
+        similarGroups.push(group);
+        group.forEach(r => processed.add(r.id));
+      }
+    });
+
+    return similarGroups;
+  };
+
+  const similarRouteGroups = findSimilarRoutes();
+
   if (loading) {
     return (
       <div className="space-y-6 animate-pulse">
@@ -165,18 +229,28 @@ const RoutesManagement = () => {
           <p className="text-muted-foreground">Manage transport routes and connections</p>
         </div>
         
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger asChild>
-            <Button className="transport-button-primary">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Route
-            </Button>
-          </DialogTrigger>
-          <RouteForm 
-            onSuccess={handleFormSuccess}
-            onCancel={() => setIsCreateOpen(false)}
-          />
-        </Dialog>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => setShowComparison(!showComparison)}
+            className={showComparison ? "bg-primary/10" : ""}
+          >
+            <GitCompare className="w-4 h-4 mr-2" />
+            Compare Tool {similarRouteGroups.length > 0 && `(${similarRouteGroups.length})`}
+          </Button>
+          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+            <DialogTrigger asChild>
+              <Button className="transport-button-primary">
+                <Plus className="w-4 h-4 mr-2" />
+                Add Route
+              </Button>
+            </DialogTrigger>
+            <RouteForm 
+              onSuccess={handleFormSuccess}
+              onCancel={() => setIsCreateOpen(false)}
+            />
+          </Dialog>
+        </div>
       </div>
 
       <div className="flex flex-col gap-4">
@@ -238,6 +312,93 @@ const RoutesManagement = () => {
           </div>
         </div>
       </div>
+
+      {showComparison && similarRouteGroups.length > 0 && (
+        <Card className="transport-card border-warning/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GitCompare className="w-5 h-5 text-warning" />
+              Route Comparison Tool
+            </CardTitle>
+            <CardDescription>
+              Found {similarRouteGroups.length} group{similarRouteGroups.length > 1 ? 's' : ''} of similar routes
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {similarRouteGroups.map((group, groupIndex) => (
+              <div key={groupIndex} className="border rounded-lg p-4 space-y-4">
+                <h3 className="font-semibold text-lg">Group {groupIndex + 1}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {group.map((route) => (
+                    <Card key={route.id} className="border-2">
+                      <CardHeader className="pb-3">
+                        <CardTitle className="text-base">{route.name}</CardTitle>
+                        <CardDescription className="text-sm">
+                          {route.start_point} → {route.end_point}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="space-y-2 text-sm">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <p className="text-muted-foreground">Type</p>
+                            <p className="font-medium">{route.transport_type}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Cost</p>
+                            <p className="font-medium">R{route.cost}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Hub</p>
+                            <p className="font-medium">{route.hub_id ? 'Yes' : 'No'}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground">Created</p>
+                            <p className="font-medium">{new Date(route.created_at).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                        {route.instructions && (
+                          <div className="pt-2 border-t">
+                            <p className="text-muted-foreground">Instructions</p>
+                            <p className="text-xs mt-1">{route.instructions}</p>
+                          </div>
+                        )}
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openEditDialog(route)}
+                            className="flex-1"
+                          >
+                            <Edit className="w-3 h-3 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDelete(route.id)}
+                            className="flex-1 text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                          >
+                            <Trash2 className="w-3 h-3 mr-1" />
+                            Delete
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
+      {showComparison && similarRouteGroups.length === 0 && (
+        <Card className="transport-card border-success/50">
+          <CardContent className="flex items-center justify-center h-32">
+            <p className="text-muted-foreground">No similar routes found! All routes appear unique.</p>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-4">
         {filteredRoutes.length === 0 ? (
