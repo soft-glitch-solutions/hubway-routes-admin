@@ -311,6 +311,15 @@ const RoutesManagement = () => {
             </Select>
           </div>
         </div>
+        
+        <div className="flex items-center justify-between pt-2 border-t">
+          <p className="text-sm text-muted-foreground">
+            Showing <span className="font-semibold text-foreground">{filteredRoutes.length}</span> of <span className="font-semibold text-foreground">{routes.length}</span> routes
+            {filteredRoutes.length !== routes.length && (
+              <span className="ml-2 text-warning">(filtered)</span>
+            )}
+          </p>
+        </div>
       </div>
 
       {showComparison && similarRouteGroups.length > 0 && (
