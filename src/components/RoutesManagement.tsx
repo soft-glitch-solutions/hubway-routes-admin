@@ -138,7 +138,7 @@ const RoutesManagement = () => {
     return duplicates.length > 0 ? duplicates.length : null;
   };
 
-  const uniqueTransportTypes = Array.from(new Set(routes.map(r => r.transport_type)));
+  const uniqueTransportTypes = Array.from(new Set(routes.map(r => r.transport_type).filter(Boolean)));
 
   if (loading) {
     return (
