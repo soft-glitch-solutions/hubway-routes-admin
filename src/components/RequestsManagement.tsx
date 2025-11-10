@@ -94,18 +94,18 @@ const RequestsManagement = () => {
       const request = priceRequests.find(req => req.id === requestId);
       if (!request) return;
 
-      const { error } = await supabase
-        .from('price_change_requests')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
-        .eq('id', requestId);
-
-      if (error) throw error;
-
-      // Award points if approved
+      // If approved, update the route price
       if (newStatus === 'approved') {
-        const pointsToAward = 50; // Award 50 points for approved price change request
+        const { error: routeError } = await supabase
+          .from('routes')
+          .update({ cost: request.new_price })
+          .eq('id', request.route_id);
+
+        if (routeError) throw routeError;
+
+        // Award points for approved request
+        const pointsToAward = 50;
         
-        // Get current points
         const { data: profileData } = await supabase
           .from('profiles')
           .select('points')
@@ -126,21 +126,28 @@ const RequestsManagement = () => {
         }
       }
 
-      setPriceRequests(priceRequests.map(req => 
-        req.id === requestId ? { ...req, status: newStatus } : req
-      ));
+      // Delete the request after processing
+      const { error: deleteError } = await supabase
+        .from('price_change_requests')
+        .delete()
+        .eq('id', requestId);
+
+      if (deleteError) throw deleteError;
+
+      // Remove from state
+      setPriceRequests(priceRequests.filter(req => req.id !== requestId));
 
       toast({
         title: "Success",
         description: newStatus === 'approved' 
-          ? `Price change request approved. User awarded 50 points!`
-          : `Price change request ${newStatus}.`,
+          ? `Price change approved and route updated! User awarded 50 points.`
+          : `Price change request ${newStatus} and removed.`,
       });
     } catch (error) {
       console.error('Error updating price request:', error);
       toast({
         title: "Error",
-        description: "Failed to update request.",
+        description: "Failed to process request.",
         variant: "destructive",
       });
     }
@@ -148,26 +155,46 @@ const RequestsManagement = () => {
 
   const updateHubRequestStatus = async (requestId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
+      const request = hubRequests.find(req => req.id === requestId);
+      if (!request) return;
+
+      // If approved, create the hub
+      if (newStatus === 'approved') {
+        const { error: hubError } = await supabase
+          .from('hubs')
+          .insert({
+            name: request.name,
+            address: request.address,
+            transport_type: request.transport_type,
+            latitude: request.latitude,
+            longitude: request.longitude,
+          });
+
+        if (hubError) throw hubError;
+      }
+
+      // Delete the request after processing
+      const { error: deleteError } = await supabase
         .from('hub_requests')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .delete()
         .eq('id', requestId);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
-      setHubRequests(hubRequests.map(req => 
-        req.id === requestId ? { ...req, status: newStatus } : req
-      ));
+      // Remove from state
+      setHubRequests(hubRequests.filter(req => req.id !== requestId));
 
       toast({
         title: "Success",
-        description: `Hub request ${newStatus}.`,
+        description: newStatus === 'approved' 
+          ? `Hub request approved and hub created!`
+          : `Hub request ${newStatus} and removed.`,
       });
     } catch (error) {
       console.error('Error updating hub request:', error);
       toast({
         title: "Error",
-        description: "Failed to update request.",
+        description: "Failed to process request.",
         variant: "destructive",
       });
     }
@@ -175,26 +202,46 @@ const RequestsManagement = () => {
 
   const updateStopRequestStatus = async (requestId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
+      const request = stopRequests.find(req => req.id === requestId);
+      if (!request) return;
+
+      // If approved, create the stop
+      if (newStatus === 'approved') {
+        const { error: stopError } = await supabase
+          .from('stops')
+          .insert({
+            name: request.name,
+            latitude: request.latitude,
+            longitude: request.longitude,
+            cost: request.cost,
+            route_id: request.route_id,
+          });
+
+        if (stopError) throw stopError;
+      }
+
+      // Delete the request after processing
+      const { error: deleteError } = await supabase
         .from('stop_requests')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .delete()
         .eq('id', requestId);
 
-      if (error) throw error;
+      if (deleteError) throw deleteError;
 
-      setStopRequests(stopRequests.map(req => 
-        req.id === requestId ? { ...req, status: newStatus } : req
-      ));
+      // Remove from state
+      setStopRequests(stopRequests.filter(req => req.id !== requestId));
 
       toast({
         title: "Success",
-        description: `Stop request ${newStatus}.`,
+        description: newStatus === 'approved' 
+          ? `Stop request approved and stop created!`
+          : `Stop request ${newStatus} and removed.`,
       });
     } catch (error) {
       console.error('Error updating stop request:', error);
       toast({
         title: "Error",
-        description: "Failed to update request.",
+        description: "Failed to process request.",
         variant: "destructive",
       });
     }
