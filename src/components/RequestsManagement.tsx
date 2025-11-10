@@ -16,6 +16,11 @@ interface PriceChangeRequest {
   status: string;
   created_at: string;
   updated_at: string;
+  profiles?: {
+    first_name: string | null;
+    last_name: string | null;
+    avatar_url: string | null;
+  };
 }
 
 interface HubRequest {
@@ -60,7 +65,7 @@ const RequestsManagement = () => {
   const fetchAllRequests = async () => {
     try {
       const [priceData, hubData, stopData] = await Promise.all([
-        supabase.from('price_change_requests').select('*').order('created_at', { ascending: false }),
+        supabase.from('price_change_requests').select('*, profiles(first_name, last_name, avatar_url)').order('created_at', { ascending: false }),
         supabase.from('hub_requests').select('*').order('created_at', { ascending: false }),
         supabase.from('stop_requests').select('*').order('created_at', { ascending: false }),
       ]);
@@ -86,6 +91,9 @@ const RequestsManagement = () => {
 
   const updatePriceRequestStatus = async (requestId: string, newStatus: string) => {
     try {
+      const request = priceRequests.find(req => req.id === requestId);
+      if (!request) return;
+
       const { error } = await supabase
         .from('price_change_requests')
         .update({ status: newStatus, updated_at: new Date().toISOString() })
@@ -93,13 +101,40 @@ const RequestsManagement = () => {
 
       if (error) throw error;
 
+      // Award points if approved
+      if (newStatus === 'approved') {
+        const pointsToAward = 50; // Award 50 points for approved price change request
+        
+        // Get current points
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('points')
+          .eq('id', request.user_id)
+          .single();
+
+        const currentPoints = profileData?.points || 0;
+        
+        const { error: pointsError } = await supabase
+          .from('profiles')
+          .update({ 
+            points: currentPoints + pointsToAward
+          })
+          .eq('id', request.user_id);
+
+        if (pointsError) {
+          console.error('Error awarding points:', pointsError);
+        }
+      }
+
       setPriceRequests(priceRequests.map(req => 
         req.id === requestId ? { ...req, status: newStatus } : req
       ));
 
       toast({
         title: "Success",
-        description: `Price change request ${newStatus}.`,
+        description: newStatus === 'approved' 
+          ? `Price change request approved. User awarded 50 points!`
+          : `Price change request ${newStatus}.`,
       });
     } catch (error) {
       console.error('Error updating price request:', error);
@@ -239,10 +274,29 @@ const RequestsManagement = () => {
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="text-xl text-foreground">Price Change Request</CardTitle>
-                      <CardDescription className="text-muted-foreground">
-                        Route ID: {request.route_id}
-                      </CardDescription>
+                      <div className="flex items-center gap-3 mb-2">
+                        {request.profiles?.avatar_url ? (
+                          <img 
+                            src={request.profiles.avatar_url} 
+                            alt="User avatar" 
+                            className="w-10 h-10 rounded-full object-cover border-2 border-primary/20"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+                            {request.profiles?.first_name?.[0] || 'U'}
+                          </div>
+                        )}
+                        <div>
+                          <CardTitle className="text-xl text-foreground">
+                            {request.profiles?.first_name && request.profiles?.last_name
+                              ? `${request.profiles.first_name} ${request.profiles.last_name}`
+                              : 'Unknown User'}
+                          </CardTitle>
+                          <CardDescription className="text-muted-foreground">
+                            Route ID: {request.route_id}
+                          </CardDescription>
+                        </div>
+                      </div>
                     </div>
                     {getStatusBadge(request.status)}
                   </div>
