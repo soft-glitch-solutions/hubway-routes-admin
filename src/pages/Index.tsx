@@ -17,6 +17,7 @@ import DocumentationManagement from '@/components/DocumentationManagement';
 import StopWaitingManagement from '@/components/StopWaitingManagement';
 import JourneysManagement from '@/components/JourneysManagement';
 import JourneyMessagesManagement from '@/components/JourneyMessagesManagement';
+import RequestsManagement from '@/components/RequestsManagement';
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -76,6 +77,8 @@ const Index = () => {
         return <JourneyMessagesManagement />;
       case 'nearby-spots':
         return <NearbySpotsManagement />;
+      case 'requests':
+        return <RequestsManagement />;
       case 'blogs':
         return <BlogsManagement />;
       case 'documentation':

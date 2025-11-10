@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Home, Building2, MapPin, Route, Users, User, FileText, BookOpen, Navigation, Clock, MessageSquare, Navigation2, Waypoints } from 'lucide-react';
+import { Menu, X, Home, Building2, MapPin, Route, Users, User, FileText, BookOpen, Navigation, Clock, MessageSquare, Navigation2, Waypoints, ClipboardList } from 'lucide-react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -26,6 +26,7 @@ const DashboardLayout = ({ children, activeTab, onTabChange }: DashboardLayoutPr
     { id: 'blogs', label: 'Blogs', icon: FileText },
     { id: 'documentation', label: 'Documentation', icon: BookOpen },
     { id: 'nearby-spots', label: 'Nearby Spots', icon: MapPin },
+    { id: 'requests', label: 'Requests', icon: ClipboardList },
     { id: 'profile', label: 'Profile', icon: User },
   ];
 
