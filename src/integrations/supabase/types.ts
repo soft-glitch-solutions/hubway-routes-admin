@@ -83,6 +83,97 @@ export type Database = {
         }
         Relationships: []
       }
+      card_entries: {
+        Row: {
+          action: string
+          amount: number
+          balance_after: number
+          card_id: string | null
+          created_at: string | null
+          date: string
+          id: string
+          notes: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          amount: number
+          balance_after: number
+          card_id?: string | null
+          created_at?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          amount?: number
+          balance_after?: number
+          card_id?: string | null
+          created_at?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_entries_card_id_fkey"
+            columns: ["card_id"]
+            isOneToOne: false
+            referencedRelation: "user_cards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      card_tracker_entries: {
+        Row: {
+          action: string
+          amount: number
+          balance_after: number
+          card_type: string
+          created_at: string | null
+          date: string
+          id: string
+          notes: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          action: string
+          amount: number
+          balance_after: number
+          card_type: string
+          created_at?: string | null
+          date: string
+          id?: string
+          notes?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          action?: string
+          amount?: number
+          balance_after?: number
+          card_type?: string
+          created_at?: string | null
+          date?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "card_tracker_entries_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       carpool_applications: {
         Row: {
           applicant_id: string
@@ -293,6 +384,158 @@ export type Database = {
         }
         Relationships: []
       }
+      driver_journeys: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          current_stop_id: string | null
+          driver_id: string
+          id: string
+          journey_id: string
+          next_stop_id: string | null
+          route_id: string
+          started_at: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          current_stop_id?: string | null
+          driver_id: string
+          id?: string
+          journey_id: string
+          next_stop_id?: string | null
+          route_id: string
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          current_stop_id?: string | null
+          driver_id?: string
+          id?: string
+          journey_id?: string
+          next_stop_id?: string | null
+          route_id?: string
+          started_at?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_journeys_current_stop_id_fkey"
+            columns: ["current_stop_id"]
+            isOneToOne: false
+            referencedRelation: "stops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_journeys_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_journeys_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_journeys_next_stop_id_fkey"
+            columns: ["next_stop_id"]
+            isOneToOne: false
+            referencedRelation: "stops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_journeys_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      drivers: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          license_number: string
+          rating: number | null
+          total_trips: number | null
+          updated_at: string | null
+          user_id: string
+          vehicle_registration: string
+          vehicle_type: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          license_number: string
+          rating?: number | null
+          total_trips?: number | null
+          updated_at?: string | null
+          user_id: string
+          vehicle_registration: string
+          vehicle_type: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          license_number?: string
+          rating?: number | null
+          total_trips?: number | null
+          updated_at?: string | null
+          user_id?: string
+          vehicle_registration?: string
+          vehicle_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      favorites: {
+        Row: {
+          created_at: string | null
+          entity_id: string
+          entity_type: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          entity_id: string
+          entity_type: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          entity_id?: string
+          entity_type?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       help_documentation: {
         Row: {
           content: string
@@ -332,6 +575,8 @@ export type Database = {
           created_at: string | null
           hub_id: string
           id: string
+          image_url: string | null
+          post_images: string[] | null
           updated_at: string | null
           user_id: string
         }
@@ -340,6 +585,8 @@ export type Database = {
           created_at?: string | null
           hub_id: string
           id?: string
+          image_url?: string | null
+          post_images?: string[] | null
           updated_at?: string | null
           user_id: string
         }
@@ -348,6 +595,8 @@ export type Database = {
           created_at?: string | null
           hub_id?: string
           id?: string
+          image_url?: string | null
+          post_images?: string[] | null
           updated_at?: string | null
           user_id?: string
         }
@@ -445,6 +694,144 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
+      }
+      journey_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_anonymous: boolean | null
+          journey_id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          journey_id: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          journey_id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_messages_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journey_messages_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journey_participants: {
+        Row: {
+          id: string
+          is_active: boolean
+          joined_at: string
+          journey_id: string
+          left_at: string | null
+          status: string | null
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          journey_id: string
+          left_at?: string | null
+          status?: string | null
+          user_id: string
+        }
+        Update: {
+          id?: string
+          is_active?: boolean
+          joined_at?: string
+          journey_id?: string
+          left_at?: string | null
+          status?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journey_participants_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journey_participants_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      journeys: {
+        Row: {
+          created_at: string | null
+          current_stop_sequence: number
+          driver_id: string | null
+          has_driver: boolean | null
+          id: string
+          last_ping_time: string | null
+          route_id: string
+          status: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_stop_sequence?: number
+          driver_id?: string | null
+          has_driver?: boolean | null
+          id?: string
+          last_ping_time?: string | null
+          route_id: string
+          status?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_stop_sequence?: number
+          driver_id?: string | null
+          has_driver?: boolean | null
+          id?: string
+          last_ping_time?: string | null
+          route_id?: string
+          status?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "journeys_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "journeys_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "routes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       login_streaks: {
         Row: {
@@ -853,6 +1240,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           favorites: Json | null
+          favorites_count: number
           fire_count: number | null
           first_name: string | null
           home: string | null
@@ -863,11 +1251,14 @@ export type Database = {
           preferred_transport: string | null
           selected_title: string | null
           titles: string[] | null
+          total_ride_time: number
+          trips: number
           updated_at: string | null
         }
         Insert: {
           avatar_url?: string | null
           favorites?: Json | null
+          favorites_count?: number
           fire_count?: number | null
           first_name?: string | null
           home?: string | null
@@ -878,11 +1269,14 @@ export type Database = {
           preferred_transport?: string | null
           selected_title?: string | null
           titles?: string[] | null
+          total_ride_time?: number
+          trips?: number
           updated_at?: string | null
         }
         Update: {
           avatar_url?: string | null
           favorites?: Json | null
+          favorites_count?: number
           fire_count?: number | null
           first_name?: string | null
           home?: string | null
@@ -893,6 +1287,8 @@ export type Database = {
           preferred_transport?: string | null
           selected_title?: string | null
           titles?: string[] | null
+          total_ride_time?: number
+          trips?: number
           updated_at?: string | null
         }
         Relationships: []
@@ -993,6 +1389,78 @@ export type Database = {
           },
         ]
       }
+      route_suggestions: {
+        Row: {
+          created_at: string | null
+          estimated_cost: number | null
+          from_lat: number
+          from_location: string
+          from_lon: number
+          id: string
+          notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          suggested_route_name: string | null
+          to_lat: number
+          to_location: string
+          to_lon: number
+          transport_type: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          estimated_cost?: number | null
+          from_lat: number
+          from_location: string
+          from_lon: number
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          suggested_route_name?: string | null
+          to_lat: number
+          to_location: string
+          to_lon: number
+          transport_type?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          estimated_cost?: number | null
+          from_lat?: number
+          from_location?: string
+          from_lon?: number
+          id?: string
+          notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          suggested_route_name?: string | null
+          to_lat?: number
+          to_location?: string
+          to_lon?: number
+          transport_type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_suggestions_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "route_suggestions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       routes: {
         Row: {
           cost: number
@@ -1000,6 +1468,7 @@ export type Database = {
           end_point: string
           hub_id: string | null
           id: string
+          instructions: string | null
           name: string
           start_point: string
           transport_type: string
@@ -1011,6 +1480,7 @@ export type Database = {
           end_point: string
           hub_id?: string | null
           id?: string
+          instructions?: string | null
           name: string
           start_point: string
           transport_type: string
@@ -1022,6 +1492,7 @@ export type Database = {
           end_point?: string
           hub_id?: string | null
           id?: string
+          instructions?: string | null
           name?: string
           start_point?: string
           transport_type?: string
@@ -1030,6 +1501,13 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "fk_hub"
+            columns: ["hub_id"]
+            isOneToOne: false
+            referencedRelation: "hubs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "routes_hub_id_fkey"
             columns: ["hub_id"]
             isOneToOne: false
             referencedRelation: "hubs"
@@ -1083,6 +1561,8 @@ export type Database = {
           content: string
           created_at: string | null
           id: string
+          image_url: string | null
+          post_images: string[] | null
           route_id: string | null
           stop_id: string
           transport_waiting_for: string | null
@@ -1093,6 +1573,8 @@ export type Database = {
           content: string
           created_at?: string | null
           id?: string
+          image_url?: string | null
+          post_images?: string[] | null
           route_id?: string | null
           stop_id: string
           transport_waiting_for?: string | null
@@ -1103,6 +1585,8 @@ export type Database = {
           content?: string
           created_at?: string | null
           id?: string
+          image_url?: string | null
+          post_images?: string[] | null
           route_id?: string | null
           stop_id?: string
           transport_waiting_for?: string | null
@@ -1195,30 +1679,40 @@ export type Database = {
           created_at: string | null
           expires_at: string
           id: string
+          journey_id: string | null
           route_id: string | null
           stop_id: string
-          transport_type: string
+          transport_type: string | null
           user_id: string
         }
         Insert: {
           created_at?: string | null
           expires_at?: string
           id?: string
+          journey_id?: string | null
           route_id?: string | null
           stop_id: string
-          transport_type: string
+          transport_type?: string | null
           user_id: string
         }
         Update: {
           created_at?: string | null
           expires_at?: string
           id?: string
+          journey_id?: string | null
           route_id?: string | null
           stop_id?: string
-          transport_type?: string
+          transport_type?: string | null
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "stop_waiting_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "stop_waiting_route_id_fkey"
             columns: ["route_id"]
@@ -1455,6 +1949,45 @@ export type Database = {
           },
         ]
       }
+      user_cards: {
+        Row: {
+          card_holder: string
+          card_number: string
+          card_type: string
+          created_at: string | null
+          current_balance: number | null
+          id: string
+          is_active: boolean | null
+          position: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          card_holder: string
+          card_number: string
+          card_type: string
+          created_at?: string | null
+          current_balance?: number | null
+          id?: string
+          is_active?: boolean | null
+          position?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          card_holder?: string
+          card_number?: string
+          card_type?: string
+          created_at?: string | null
+          current_balance?: number | null
+          id?: string
+          is_active?: boolean | null
+          position?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       user_journeys: {
         Row: {
           ai_recommendations: string[] | null
@@ -1553,18 +2086,30 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      cleanup_expired_waiting: {
-        Args: Record<PropertyKey, never>
+      add_favorite: {
+        Args: { p_entity_id: string; p_entity_type: string; p_user_id: string }
         Returns: undefined
       }
-      cleanup_old_posts: {
-        Args: Record<PropertyKey, never>
+      bump_favorites_count: {
+        Args: { p_delta: number; p_user_id: string }
         Returns: undefined
       }
-      get_user_email: {
-        Args: { user_id: string }
-        Returns: string
+      cleanup_expired_waiting: { Args: never; Returns: undefined }
+      cleanup_old_posts: { Args: never; Returns: undefined }
+      find_drivers_in_journey: {
+        Args: { journey_id: string }
+        Returns: {
+          driver_id: string
+          first_name: string
+          last_name: string
+          user_id: string
+        }[]
       }
+      get_favorites_count: {
+        Args: { p_entity_id: string; p_entity_type: string }
+        Returns: number
+      }
+      get_user_email: { Args: { user_id: string }; Returns: string }
       handle_login_streak: {
         Args: { input_user_id: string }
         Returns: {
@@ -1573,13 +2118,26 @@ export type Database = {
           points_earned: number
         }[]
       }
-      is_admin: {
-        Args: { user_id: string }
+      increment_trip: {
+        Args: { ride_time: number; user_id: string }
+        Returns: {
+          new_total_ride_time: number
+          new_trips: number
+        }[]
+      }
+      is_admin: { Args: { user_id: string }; Returns: boolean }
+      is_driver: { Args: { user_uuid: string }; Returns: boolean }
+      is_favorited: {
+        Args: { p_entity_id: string; p_entity_type: string; p_user_id: string }
         Returns: boolean
+      }
+      remove_favorite: {
+        Args: { p_entity_id: string; p_entity_type: string; p_user_id: string }
+        Returns: undefined
       }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "driver"
       report_status: "pending" | "approved" | "rejected"
     }
     CompositeTypes: {
@@ -1708,7 +2266,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "driver"],
       report_status: ["pending", "approved", "rejected"],
     },
   },
