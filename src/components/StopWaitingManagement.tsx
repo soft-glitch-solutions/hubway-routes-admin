@@ -83,6 +83,32 @@ const StopWaitingManagement = () => {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (!confirm(`Are you sure you want to delete all ${waitingEntries.length} waiting entries? This action cannot be undone.`)) return;
+
+    try {
+      const { error } = await supabase
+        .from('stop_waiting')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+
+      if (error) throw error;
+
+      setWaitingEntries([]);
+      toast({
+        title: "Success",
+        description: "All waiting entries deleted successfully.",
+      });
+    } catch (error) {
+      console.error('Error deleting all waiting entries:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete all waiting entries.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const isExpired = (expiresAt: string) => {
     return new Date(expiresAt) < new Date();
   };
@@ -108,6 +134,12 @@ const StopWaitingManagement = () => {
             Manage active and expired waiting entries at stops
           </p>
         </div>
+        {waitingEntries.length > 0 && (
+          <Button variant="destructive" onClick={handleDeleteAll}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete All
+          </Button>
+        )}
       </div>
 
       <Card>
