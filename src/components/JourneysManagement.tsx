@@ -80,6 +80,32 @@ const JourneysManagement = () => {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (!confirm(`Are you sure you want to delete all ${journeys.length} journeys? This action cannot be undone.`)) return;
+
+    try {
+      const { error } = await supabase
+        .from('journeys' as any)
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000');
+
+      if (error) throw error;
+
+      setJourneys([]);
+      toast({
+        title: "Success",
+        description: "All journeys deleted successfully.",
+      });
+    } catch (error) {
+      console.error('Error deleting all journeys:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete all journeys.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const formatDateTime = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
@@ -114,6 +140,12 @@ const JourneysManagement = () => {
             Manage active and completed transport journeys
           </p>
         </div>
+        {journeys.length > 0 && (
+          <Button variant="destructive" onClick={handleDeleteAll}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete All
+          </Button>
+        )}
       </div>
 
       <Card>

@@ -743,7 +743,10 @@ export type Database = {
           is_active: boolean
           joined_at: string
           journey_id: string
+          last_location_update: string | null
+          latitude: number | null
           left_at: string | null
+          longitude: number | null
           status: string | null
           user_id: string
         }
@@ -752,7 +755,10 @@ export type Database = {
           is_active?: boolean
           joined_at?: string
           journey_id: string
+          last_location_update?: string | null
+          latitude?: number | null
           left_at?: string | null
+          longitude?: number | null
           status?: string | null
           user_id: string
         }
@@ -761,7 +767,10 @@ export type Database = {
           is_active?: boolean
           joined_at?: string
           journey_id?: string
+          last_location_update?: string | null
+          latitude?: number | null
           left_at?: string | null
+          longitude?: number | null
           status?: string | null
           user_id?: string
         }
@@ -1883,21 +1892,30 @@ export type Database = {
       }
       titles: {
         Row: {
+          backstory: string | null
           created_at: string | null
+          description: string | null
           id: number
           points_required: number
+          rarity: string | null
           title: string
         }
         Insert: {
+          backstory?: string | null
           created_at?: string | null
+          description?: string | null
           id?: number
           points_required: number
+          rarity?: string | null
           title: string
         }
         Update: {
+          backstory?: string | null
           created_at?: string | null
+          description?: string | null
           id?: number
           points_required?: number
+          rarity?: string | null
           title?: string
         }
         Relationships: []
