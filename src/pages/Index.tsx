@@ -11,6 +11,7 @@ import NearbySpotsManagement from '@/components/NearbySpotsManagement';
 import ProfileManagement from '@/components/ProfileManagement';
 import UsersManagement from '@/components/UsersManagement';
 import RouteStopsManagement from '@/components/RouteStopsManagement';
+import StopRoutesManagement from '@/components/StopRoutesManagement';
 import HubRoutesManagement from '@/components/HubRoutesManagement';
 import BlogsManagement from '@/components/BlogsManagement';
 import DocumentationManagement from '@/components/DocumentationManagement';
@@ -67,6 +68,8 @@ const Index = () => {
         return <RoutesManagement />;
       case 'route-stops':
         return <RouteStopsManagement />;
+      case 'stop-routes':
+        return <StopRoutesManagement />;
       case 'hub-routes':
         return <HubRoutesManagement />;
       case 'stop-waiting':

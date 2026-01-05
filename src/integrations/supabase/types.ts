@@ -354,6 +354,110 @@ export type Database = {
           },
         ]
       }
+      completed_journeys: {
+        Row: {
+          co2_saved_kg: number | null
+          completed_at: string
+          created_at: string | null
+          distance_km: number | null
+          driver_id: string | null
+          duration_seconds: number
+          end_point: string | null
+          end_stop_id: string | null
+          id: string
+          journey_id: string | null
+          notes: string | null
+          passenger_count: number | null
+          points_earned: number | null
+          rating: number | null
+          route_name: string
+          start_point: string | null
+          start_stop_id: string | null
+          started_at: string
+          transport_type: string
+          updated_at: string | null
+          user_id: string | null
+          was_driving: boolean | null
+        }
+        Insert: {
+          co2_saved_kg?: number | null
+          completed_at: string
+          created_at?: string | null
+          distance_km?: number | null
+          driver_id?: string | null
+          duration_seconds: number
+          end_point?: string | null
+          end_stop_id?: string | null
+          id?: string
+          journey_id?: string | null
+          notes?: string | null
+          passenger_count?: number | null
+          points_earned?: number | null
+          rating?: number | null
+          route_name: string
+          start_point?: string | null
+          start_stop_id?: string | null
+          started_at: string
+          transport_type: string
+          updated_at?: string | null
+          user_id?: string | null
+          was_driving?: boolean | null
+        }
+        Update: {
+          co2_saved_kg?: number | null
+          completed_at?: string
+          created_at?: string | null
+          distance_km?: number | null
+          driver_id?: string | null
+          duration_seconds?: number
+          end_point?: string | null
+          end_stop_id?: string | null
+          id?: string
+          journey_id?: string | null
+          notes?: string | null
+          passenger_count?: number | null
+          points_earned?: number | null
+          rating?: number | null
+          route_name?: string
+          start_point?: string | null
+          start_stop_id?: string | null
+          started_at?: string
+          transport_type?: string
+          updated_at?: string | null
+          user_id?: string | null
+          was_driving?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "completed_journeys_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completed_journeys_end_stop_id_fkey"
+            columns: ["end_stop_id"]
+            isOneToOne: false
+            referencedRelation: "stops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completed_journeys_journey_id_fkey"
+            columns: ["journey_id"]
+            isOneToOne: false
+            referencedRelation: "journeys"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "completed_journeys_start_stop_id_fkey"
+            columns: ["start_stop_id"]
+            isOneToOne: false
+            referencedRelation: "stops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deployment_logs: {
         Row: {
           changes: string[] | null
@@ -566,6 +670,48 @@ export type Database = {
           tags?: string[] | null
           title?: string
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      help_topics: {
+        Row: {
+          category: string
+          content: string | null
+          created_at: string
+          description: string
+          id: string
+          is_active: boolean | null
+          order: number | null
+          screen: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          content?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          is_active?: boolean | null
+          order?: number | null
+          screen?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          is_active?: boolean | null
+          order?: number | null
+          screen?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -793,6 +939,7 @@ export type Database = {
       }
       journeys: {
         Row: {
+          completed_at: string | null
           created_at: string | null
           current_stop_sequence: number
           driver_id: string | null
@@ -800,10 +947,12 @@ export type Database = {
           id: string
           last_ping_time: string | null
           route_id: string
+          started_at: string | null
           status: string
           updated_at: string | null
         }
         Insert: {
+          completed_at?: string | null
           created_at?: string | null
           current_stop_sequence?: number
           driver_id?: string | null
@@ -811,10 +960,12 @@ export type Database = {
           id?: string
           last_ping_time?: string | null
           route_id: string
+          started_at?: string | null
           status?: string
           updated_at?: string | null
         }
         Update: {
+          completed_at?: string | null
           created_at?: string | null
           current_stop_sequence?: number
           driver_id?: string | null
@@ -822,6 +973,7 @@ export type Database = {
           id?: string
           last_ping_time?: string | null
           route_id?: string
+          started_at?: string | null
           status?: string
           updated_at?: string | null
         }
@@ -1261,6 +1413,7 @@ export type Database = {
           selected_title: string | null
           titles: string[] | null
           total_ride_time: number
+          total_trips: number | null
           trips: number
           updated_at: string | null
         }
@@ -1279,6 +1432,7 @@ export type Database = {
           selected_title?: string | null
           titles?: string[] | null
           total_ride_time?: number
+          total_trips?: number | null
           trips?: number
           updated_at?: string | null
         }
@@ -1297,8 +1451,30 @@ export type Database = {
           selected_title?: string | null
           titles?: string[] | null
           total_ride_time?: number
+          total_trips?: number | null
           trips?: number
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      push_tokens: {
+        Row: {
+          created_at: string | null
+          expo_push_token: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          expo_push_token: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          expo_push_token?: string
+          id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
