@@ -8,7 +8,7 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Route, Plus, Edit, Trash2, Search, GitCompare } from 'lucide-react';
+import { Route, Plus, Edit, Trash2, Search, GitCompare, Settings, X } from 'lucide-react';
 import RouteForm from './RouteForm';
 
 interface RouteData {
@@ -35,6 +35,11 @@ const RoutesManagement = () => {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
+  const [showTransportTypes, setShowTransportTypes] = useState(false);
+  const [transportTypes, setTransportTypes] = useState<string[]>([
+    'Taxi', 'Bus', 'Train', 'Uber', 'Bolt', 'Carpool'
+  ]);
+  const [newTransportType, setNewTransportType] = useState('');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -139,7 +144,49 @@ const RoutesManagement = () => {
     return duplicates.length > 0 ? duplicates.length : null;
   };
 
-  const uniqueTransportTypes = Array.from(new Set(routes.map(r => r.transport_type).filter(Boolean)));
+  const uniqueTransportTypes = Array.from(new Set([...transportTypes, ...routes.map(r => r.transport_type).filter(Boolean)]));
+
+  const handleAddTransportType = () => {
+    if (!newTransportType.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a transport type name.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (transportTypes.includes(newTransportType.trim())) {
+      toast({
+        title: "Error",
+        description: "This transport type already exists.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setTransportTypes([...transportTypes, newTransportType.trim()]);
+    setNewTransportType('');
+    toast({
+      title: "Success",
+      description: `Transport type "${newTransportType.trim()}" added.`,
+    });
+  };
+
+  const handleDeleteTransportType = (type: string) => {
+    const routesUsingType = routes.filter(r => r.transport_type === type);
+    if (routesUsingType.length > 0) {
+      toast({
+        title: "Cannot Delete",
+        description: `${routesUsingType.length} route(s) are using this transport type.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    setTransportTypes(transportTypes.filter(t => t !== type));
+    toast({
+      title: "Success",
+      description: `Transport type "${type}" deleted.`,
+    });
+  };
 
   // String similarity calculation (Levenshtein distance based)
   const calculateSimilarity = (str1: string, str2: string): number => {
@@ -232,6 +279,14 @@ const RoutesManagement = () => {
         <div className="flex gap-2">
           <Button 
             variant="outline"
+            onClick={() => setShowTransportTypes(!showTransportTypes)}
+            className={showTransportTypes ? "bg-primary/10" : ""}
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Transport Types
+          </Button>
+          <Button 
+            variant="outline"
             onClick={() => setShowComparison(!showComparison)}
             className={showComparison ? "bg-primary/10" : ""}
           >
@@ -321,6 +376,58 @@ const RoutesManagement = () => {
           </p>
         </div>
       </div>
+
+      {showTransportTypes && (
+        <Card className="transport-card border-primary/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Settings className="w-5 h-5 text-primary" />
+              Transport Types Management
+            </CardTitle>
+            <CardDescription>
+              Add or remove transport types used in routes
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex gap-2">
+              <Input
+                placeholder="New transport type..."
+                value={newTransportType}
+                onChange={(e) => setNewTransportType(e.target.value)}
+                className="transport-input flex-1"
+                onKeyDown={(e) => e.key === 'Enter' && handleAddTransportType()}
+              />
+              <Button onClick={handleAddTransportType} className="transport-button-primary">
+                <Plus className="w-4 h-4 mr-2" />
+                Add
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {transportTypes.map((type) => {
+                const routeCount = routes.filter(r => r.transport_type === type).length;
+                return (
+                  <div
+                    key={type}
+                    className="flex items-center gap-2 bg-muted px-3 py-2 rounded-lg"
+                  >
+                    <span className="font-medium">{type}</span>
+                    <span className="text-xs text-muted-foreground">({routeCount} routes)</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteTransportType(type)}
+                      className="h-6 w-6 p-0 hover:bg-destructive hover:text-destructive-foreground"
+                      disabled={routeCount > 0}
+                    >
+                      <X className="w-3 h-3" />
+                    </Button>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {showComparison && similarRouteGroups.length > 0 && (
         <Card className="transport-card border-warning/50">
