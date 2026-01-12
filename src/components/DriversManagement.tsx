@@ -9,7 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { Search, CheckCircle, XCircle, Eye, Car, GraduationCap, Users, RefreshCw } from 'lucide-react';
+import { Search, CheckCircle, XCircle, Eye, Car, GraduationCap, Users, RefreshCw, FileImage } from 'lucide-react';
+import DocumentViewer from './DocumentViewer';
 
 interface Profile {
   id: string;
@@ -81,6 +82,9 @@ const DriversManagement = () => {
   const [verificationNotes, setVerificationNotes] = useState('');
   const [showDriverDialog, setShowDriverDialog] = useState(false);
   const [showSchoolDialog, setShowSchoolDialog] = useState(false);
+  const [showDocumentViewer, setShowDocumentViewer] = useState(false);
+  const [documentViewerDocs, setDocumentViewerDocs] = useState<{ url: string; title: string }[]>([]);
+  const [documentViewerIndex, setDocumentViewerIndex] = useState(0);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -602,24 +606,59 @@ const DriversManagement = () => {
                 <label className="text-sm font-medium">Documents</label>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {selectedDriver.license_front_url && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={selectedDriver.license_front_url} target="_blank" rel="noopener noreferrer">
-                        License (Front)
-                      </a>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        const docs = [];
+                        if (selectedDriver.license_front_url) docs.push({ url: selectedDriver.license_front_url, title: 'License (Front)' });
+                        if (selectedDriver.license_back_url) docs.push({ url: selectedDriver.license_back_url, title: 'License (Back)' });
+                        if (selectedDriver.pdp_certificate_url) docs.push({ url: selectedDriver.pdp_certificate_url, title: 'PDP Certificate' });
+                        setDocumentViewerDocs(docs);
+                        setDocumentViewerIndex(0);
+                        setShowDocumentViewer(true);
+                      }}
+                    >
+                      <FileImage className="w-4 h-4 mr-2" />
+                      License (Front)
                     </Button>
                   )}
                   {selectedDriver.license_back_url && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={selectedDriver.license_back_url} target="_blank" rel="noopener noreferrer">
-                        License (Back)
-                      </a>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        const docs = [];
+                        if (selectedDriver.license_front_url) docs.push({ url: selectedDriver.license_front_url, title: 'License (Front)' });
+                        if (selectedDriver.license_back_url) docs.push({ url: selectedDriver.license_back_url, title: 'License (Back)' });
+                        if (selectedDriver.pdp_certificate_url) docs.push({ url: selectedDriver.pdp_certificate_url, title: 'PDP Certificate' });
+                        const backIndex = docs.findIndex(d => d.title === 'License (Back)');
+                        setDocumentViewerDocs(docs);
+                        setDocumentViewerIndex(backIndex >= 0 ? backIndex : 0);
+                        setShowDocumentViewer(true);
+                      }}
+                    >
+                      <FileImage className="w-4 h-4 mr-2" />
+                      License (Back)
                     </Button>
                   )}
                   {selectedDriver.pdp_certificate_url && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={selectedDriver.pdp_certificate_url} target="_blank" rel="noopener noreferrer">
-                        PDP Certificate
-                      </a>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => {
+                        const docs = [];
+                        if (selectedDriver.license_front_url) docs.push({ url: selectedDriver.license_front_url, title: 'License (Front)' });
+                        if (selectedDriver.license_back_url) docs.push({ url: selectedDriver.license_back_url, title: 'License (Back)' });
+                        if (selectedDriver.pdp_certificate_url) docs.push({ url: selectedDriver.pdp_certificate_url, title: 'PDP Certificate' });
+                        const pdpIndex = docs.findIndex(d => d.title === 'PDP Certificate');
+                        setDocumentViewerDocs(docs);
+                        setDocumentViewerIndex(pdpIndex >= 0 ? pdpIndex : 0);
+                        setShowDocumentViewer(true);
+                      }}
+                    >
+                      <FileImage className="w-4 h-4 mr-2" />
+                      PDP Certificate
                     </Button>
                   )}
                 </div>
@@ -631,9 +670,24 @@ const DriversManagement = () => {
                   <label className="text-sm font-medium">Vehicle Photos</label>
                   <div className="grid grid-cols-3 gap-2 mt-1">
                     {selectedDriver.vehicle_photos.map((photo, index) => (
-                      <a key={index} href={photo} target="_blank" rel="noopener noreferrer">
+                      <button
+                        key={index}
+                        onClick={() => {
+                          const vehicleDocs = selectedDriver.vehicle_photos!.map((p, i) => ({
+                            url: p,
+                            title: `Vehicle Photo ${i + 1}`
+                          }));
+                          setDocumentViewerDocs(vehicleDocs);
+                          setDocumentViewerIndex(index);
+                          setShowDocumentViewer(true);
+                        }}
+                        className="relative group cursor-pointer"
+                      >
                         <img src={photo} alt={`Vehicle ${index + 1}`} className="w-full h-24 object-cover rounded" />
-                      </a>
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded flex items-center justify-center">
+                          <Eye className="w-6 h-6 text-white" />
+                        </div>
+                      </button>
                     ))}
                   </div>
                 </div>
@@ -753,6 +807,14 @@ const DriversManagement = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Document Viewer */}
+      <DocumentViewer
+        documents={documentViewerDocs}
+        initialIndex={documentViewerIndex}
+        open={showDocumentViewer}
+        onClose={() => setShowDocumentViewer(false)}
+      />
     </div>
   );
 };
