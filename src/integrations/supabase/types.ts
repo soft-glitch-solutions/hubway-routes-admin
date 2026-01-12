@@ -566,51 +566,124 @@ export type Database = {
           },
         ]
       }
+      driver_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          driver_id: string
+          id: string
+          rating: number
+          reviewer_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          driver_id: string
+          id?: string
+          rating: number
+          reviewer_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          driver_id?: string
+          id?: string
+          rating?: number
+          reviewer_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "driver_reviews_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "driver_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       drivers: {
         Row: {
           created_at: string | null
           id: string
           is_active: boolean | null
           is_verified: boolean | null
+          license_back_url: string | null
+          license_front_url: string | null
           license_number: string
+          pdp_certificate_url: string | null
           rating: number | null
           total_trips: number | null
           updated_at: string | null
           user_id: string
+          vehicle_photos: string[] | null
           vehicle_registration: string
           vehicle_type: string
+          verification_notes: string | null
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           created_at?: string | null
           id?: string
           is_active?: boolean | null
           is_verified?: boolean | null
+          license_back_url?: string | null
+          license_front_url?: string | null
           license_number: string
+          pdp_certificate_url?: string | null
           rating?: number | null
           total_trips?: number | null
           updated_at?: string | null
           user_id: string
+          vehicle_photos?: string[] | null
           vehicle_registration: string
           vehicle_type: string
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           created_at?: string | null
           id?: string
           is_active?: boolean | null
           is_verified?: boolean | null
+          license_back_url?: string | null
+          license_front_url?: string | null
           license_number?: string
+          pdp_certificate_url?: string | null
           rating?: number | null
           total_trips?: number | null
           updated_at?: string | null
           user_id?: string
+          vehicle_photos?: string[] | null
           vehicle_registration?: string
           vehicle_type?: string
+          verification_notes?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "drivers_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "drivers_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -1700,6 +1773,143 @@ export type Database = {
           },
         ]
       }
+      saved_transports: {
+        Row: {
+          created_at: string | null
+          id: string
+          transport_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          transport_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          transport_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_transports_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "school_transports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_transports_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_stats"
+            referencedColumns: ["transport_id"]
+          },
+          {
+            foreignKeyName: "saved_transports_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_with_driver"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_transports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      school_transports: {
+        Row: {
+          capacity: number
+          created_at: string | null
+          current_riders: number | null
+          description: string | null
+          driver_id: string
+          features: string[] | null
+          id: string
+          is_active: boolean | null
+          is_verified: boolean | null
+          pickup_areas: string[]
+          pickup_times: string[]
+          price_per_month: number | null
+          price_per_week: number | null
+          rules: string | null
+          school_area: string
+          school_name: string
+          updated_at: string | null
+          vehicle_info: string | null
+          vehicle_type: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          capacity: number
+          created_at?: string | null
+          current_riders?: number | null
+          description?: string | null
+          driver_id: string
+          features?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          pickup_areas: string[]
+          pickup_times: string[]
+          price_per_month?: number | null
+          price_per_week?: number | null
+          rules?: string | null
+          school_area: string
+          school_name: string
+          updated_at?: string | null
+          vehicle_info?: string | null
+          vehicle_type: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          capacity?: number
+          created_at?: string | null
+          current_riders?: number | null
+          description?: string | null
+          driver_id?: string
+          features?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          is_verified?: boolean | null
+          pickup_areas?: string[]
+          pickup_times?: string[]
+          price_per_month?: number | null
+          price_per_week?: number | null
+          rules?: string | null
+          school_area?: string
+          school_name?: string
+          updated_at?: string | null
+          vehicle_info?: string | null
+          vehicle_type?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "school_transports_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_transports_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stop_busy_times: {
         Row: {
           busyness_level: number
@@ -2143,6 +2353,570 @@ export type Database = {
           },
         ]
       }
+      transport_attendance: {
+        Row: {
+          created_at: string | null
+          date: string
+          dropoff_time: string | null
+          id: string
+          notes: string | null
+          pickup_time: string | null
+          status: string | null
+          subscription_id: string
+          transport_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          dropoff_time?: string | null
+          id?: string
+          notes?: string | null
+          pickup_time?: string | null
+          status?: string | null
+          subscription_id: string
+          transport_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          dropoff_time?: string | null
+          id?: string
+          notes?: string | null
+          pickup_time?: string | null
+          status?: string | null
+          subscription_id?: string
+          transport_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_attendance_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "transport_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_attendance_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "school_transports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_attendance_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_stats"
+            referencedColumns: ["transport_id"]
+          },
+          {
+            foreignKeyName: "transport_attendance_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_with_driver"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_attendance_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          receiver_id: string
+          sender_id: string
+          transport_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          receiver_id: string
+          sender_id: string
+          transport_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          receiver_id?: string
+          sender_id?: string
+          transport_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_messages_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "school_transports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_messages_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_stats"
+            referencedColumns: ["transport_id"]
+          },
+          {
+            foreignKeyName: "transport_messages_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_with_driver"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_notifications: {
+        Row: {
+          created_at: string | null
+          data: Json | null
+          id: string
+          is_read: boolean | null
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          data?: Json | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_post_interactions: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          post_id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          post_id: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          post_id?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_post_interactions_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "transport_posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_post_interactions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          driver_id: string
+          id: string
+          photos: string[] | null
+          transport_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          driver_id: string
+          id?: string
+          photos?: string[] | null
+          transport_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          driver_id?: string
+          id?: string
+          photos?: string[] | null
+          transport_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_posts_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_posts_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "school_transports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_posts_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_stats"
+            referencedColumns: ["transport_id"]
+          },
+          {
+            foreignKeyName: "transport_posts_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_with_driver"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_requests: {
+        Row: {
+          created_at: string | null
+          dropoff_address: string | null
+          id: string
+          message: string | null
+          parent_email: string | null
+          parent_phone: string
+          pickup_address: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string | null
+          student_grade: string | null
+          student_name: string
+          transport_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          dropoff_address?: string | null
+          id?: string
+          message?: string | null
+          parent_email?: string | null
+          parent_phone: string
+          pickup_address: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          student_grade?: string | null
+          student_name: string
+          transport_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          dropoff_address?: string | null
+          id?: string
+          message?: string | null
+          parent_email?: string | null
+          parent_phone?: string
+          pickup_address?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string | null
+          student_grade?: string | null
+          student_name?: string
+          transport_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_requests_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "school_transports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_requests_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_stats"
+            referencedColumns: ["transport_id"]
+          },
+          {
+            foreignKeyName: "transport_requests_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_with_driver"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_reviews: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          driver_comment: string | null
+          driver_rating: number | null
+          id: string
+          rating: number
+          reviewer_id: string
+          transport_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          driver_comment?: string | null
+          driver_rating?: number | null
+          id?: string
+          rating: number
+          reviewer_id: string
+          transport_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          driver_comment?: string | null
+          driver_rating?: number | null
+          id?: string
+          rating?: number
+          reviewer_id?: string
+          transport_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_reviews_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "school_transports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_reviews_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_stats"
+            referencedColumns: ["transport_id"]
+          },
+          {
+            foreignKeyName: "transport_reviews_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_with_driver"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_schedules: {
+        Row: {
+          created_at: string | null
+          day_of_week: number
+          dropoff_time: string | null
+          id: string
+          is_active: boolean | null
+          pickup_time: string
+          transport_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day_of_week: number
+          dropoff_time?: string | null
+          id?: string
+          is_active?: boolean | null
+          pickup_time: string
+          transport_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day_of_week?: number
+          dropoff_time?: string | null
+          id?: string
+          is_active?: boolean | null
+          pickup_time?: string
+          transport_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_schedules_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "school_transports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_schedules_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_stats"
+            referencedColumns: ["transport_id"]
+          },
+          {
+            foreignKeyName: "transport_schedules_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_with_driver"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      transport_subscriptions: {
+        Row: {
+          created_at: string | null
+          end_date: string | null
+          id: string
+          monthly_rate: number
+          payment_status: string | null
+          start_date: string
+          status: string | null
+          student_name: string
+          transport_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          monthly_rate: number
+          payment_status?: string | null
+          start_date: string
+          status?: string | null
+          student_name: string
+          transport_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          end_date?: string | null
+          id?: string
+          monthly_rate?: number
+          payment_status?: string | null
+          start_date?: string
+          status?: string | null
+          student_name?: string
+          transport_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transport_subscriptions_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "school_transports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_subscriptions_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_stats"
+            referencedColumns: ["transport_id"]
+          },
+          {
+            foreignKeyName: "transport_subscriptions_transport_id_fkey"
+            columns: ["transport_id"]
+            isOneToOne: false
+            referencedRelation: "transport_with_driver"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transport_subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_cards: {
         Row: {
           card_holder: string
@@ -2277,7 +3051,76 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      transport_stats: {
+        Row: {
+          approved_requests: number | null
+          avg_rating: number | null
+          capacity: number | null
+          current_riders: number | null
+          pending_requests: number | null
+          saved_count: number | null
+          school_name: string | null
+          total_requests: number | null
+          total_reviews: number | null
+          transport_id: string | null
+        }
+        Relationships: []
+      }
+      transport_with_driver: {
+        Row: {
+          capacity: number | null
+          created_at: string | null
+          current_riders: number | null
+          description: string | null
+          driver_avatar_url: string | null
+          driver_first_name: string | null
+          driver_id: string | null
+          driver_last_name: string | null
+          driver_rating: number | null
+          driver_user_id: string | null
+          driver_verified: boolean | null
+          features: string[] | null
+          id: string | null
+          is_active: boolean | null
+          is_verified: boolean | null
+          pickup_areas: string[] | null
+          pickup_times: string[] | null
+          price_per_month: number | null
+          price_per_week: number | null
+          rules: string | null
+          school_area: string | null
+          school_name: string | null
+          total_trips: number | null
+          updated_at: string | null
+          vehicle_info: string | null
+          vehicle_type: string | null
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drivers_user_id_fkey"
+            columns: ["driver_user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_transports_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "school_transports_verified_by_fkey"
+            columns: ["verified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       add_favorite: {

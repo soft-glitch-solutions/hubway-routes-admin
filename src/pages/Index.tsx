@@ -19,6 +19,7 @@ import StopWaitingManagement from '@/components/StopWaitingManagement';
 import JourneysManagement from '@/components/JourneysManagement';
 import JourneyMessagesManagement from '@/components/JourneyMessagesManagement';
 import RequestsManagement from '@/components/RequestsManagement';
+import DriversManagement from '@/components/DriversManagement';
 
 const Index = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -72,6 +73,8 @@ const Index = () => {
         return <StopRoutesManagement />;
       case 'hub-routes':
         return <HubRoutesManagement />;
+      case 'drivers':
+        return <DriversManagement />;
       case 'stop-waiting':
         return <StopWaitingManagement />;
       case 'journeys':
