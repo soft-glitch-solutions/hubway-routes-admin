@@ -163,13 +163,43 @@ const DriversManagement = () => {
 
     if (error) {
       toast({ title: 'Error updating driver', description: error.message, variant: 'destructive' });
-    } else {
-      toast({ title: approve ? 'Driver Verified' : 'Driver Rejected', description: `Driver has been ${approve ? 'verified' : 'rejected'} successfully.` });
-      setShowDriverDialog(false);
-      setSelectedDriver(null);
-      setVerificationNotes('');
-      fetchDrivers();
+      return;
     }
+
+    // Update user role in user_roles table
+    if (approve) {
+      // Add driver role when verified
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .upsert({ 
+          user_id: driver.user_id, 
+          role: 'driver' 
+        }, { 
+          onConflict: 'user_id,role' 
+        });
+      
+      if (roleError) {
+        console.error('Error adding driver role:', roleError);
+        toast({ title: 'Warning', description: 'Driver verified but role update failed.', variant: 'destructive' });
+      }
+    } else {
+      // Remove driver role when rejected
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', driver.user_id)
+        .eq('role', 'driver');
+      
+      if (roleError) {
+        console.error('Error removing driver role:', roleError);
+      }
+    }
+
+    toast({ title: approve ? 'Driver Verified' : 'Driver Rejected', description: `Driver has been ${approve ? 'verified' : 'rejected'} successfully.` });
+    setShowDriverDialog(false);
+    setSelectedDriver(null);
+    setVerificationNotes('');
+    fetchDrivers();
   };
 
   const handleVerifySchoolTransport = async (transport: SchoolTransport, approve: boolean) => {
