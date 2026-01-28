@@ -231,14 +231,14 @@ const StopsManagement = () => {
               Add Stop
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
+          <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
+            <DialogHeader className="flex-shrink-0">
               <DialogTitle>Create New Stop</DialogTitle>
               <DialogDescription>
                 Add a new transport stop to the system
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreate} className="space-y-4">
+            <form onSubmit={handleCreate} className="flex-1 overflow-y-auto space-y-4 pr-2">
               <div className="space-y-2">
                 <Label htmlFor="name">Stop Name</Label>
                 <Input
@@ -249,7 +249,7 @@ const StopsManagement = () => {
                   className="transport-input"
                 />
               </div>
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <Label>Location</Label>
                   <Button
@@ -269,13 +269,13 @@ const StopsManagement = () => {
                     onLocationSelect={handleLocationSelect}
                     initialLat={formData.latitude ? parseFloat(formData.latitude) : undefined}
                     initialLng={formData.longitude ? parseFloat(formData.longitude) : undefined}
-                    height="300px"
+                    height="200px"
                   />
                 )}
                 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="latitude">Latitude</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="latitude" className="text-xs">Latitude</Label>
                     <Input
                       id="latitude"
                       type="number"
@@ -283,11 +283,11 @@ const StopsManagement = () => {
                       value={formData.latitude}
                       onChange={(e) => setFormData({...formData, latitude: e.target.value})}
                       required
-                      className="transport-input"
+                      className="transport-input h-9"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="longitude">Longitude</Label>
+                  <div className="space-y-1">
+                    <Label htmlFor="longitude" className="text-xs">Longitude</Label>
                     <Input
                       id="longitude"
                       type="number"
@@ -295,35 +295,35 @@ const StopsManagement = () => {
                       value={formData.longitude}
                       onChange={(e) => setFormData({...formData, longitude: e.target.value})}
                       required
-                      className="transport-input"
+                      className="transport-input h-9"
                     />
                   </div>
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="cost">Cost (Optional)</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="cost" className="text-xs">Cost (Optional)</Label>
                   <Input
                     id="cost"
                     type="number"
                     step="0.01"
                     value={formData.cost}
                     onChange={(e) => setFormData({...formData, cost: e.target.value})}
-                    className="transport-input"
+                    className="transport-input h-9"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="order_number">Order (Optional)</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="order_number" className="text-xs">Order (Optional)</Label>
                   <Input
                     id="order_number"
                     type="number"
                     value={formData.order_number}
                     onChange={(e) => setFormData({...formData, order_number: e.target.value})}
-                    className="transport-input"
+                    className="transport-input h-9"
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 pt-2">
                 <Button type="submit" className="transport-button-primary flex-1">
                   Create Stop
                 </Button>
@@ -420,15 +420,14 @@ const StopsManagement = () => {
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
+        <DialogContent className="max-w-md max-h-[90vh] flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Edit Stop</DialogTitle>
             <DialogDescription>
               Update stop information
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleEdit} className="space-y-4">
-            
+          <form onSubmit={handleEdit} className="flex-1 overflow-y-auto space-y-4 pr-2">
             <div className="space-y-2">
               <Label htmlFor="edit-name">Stop Name</Label>
               <Input
@@ -439,7 +438,7 @@ const StopsManagement = () => {
                 className="transport-input"
               />
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <Label>Location</Label>
                 <Button
@@ -459,13 +458,13 @@ const StopsManagement = () => {
                   onLocationSelect={handleLocationSelect}
                   initialLat={formData.latitude ? parseFloat(formData.latitude) : undefined}
                   initialLng={formData.longitude ? parseFloat(formData.longitude) : undefined}
-                  height="300px"
+                  height="200px"
                 />
               )}
               
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-latitude">Latitude</Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-latitude" className="text-xs">Latitude</Label>
                   <Input
                     id="edit-latitude"
                     type="number"
@@ -473,11 +472,11 @@ const StopsManagement = () => {
                     value={formData.latitude}
                     onChange={(e) => setFormData({...formData, latitude: e.target.value})}
                     required
-                    className="transport-input"
+                    className="transport-input h-9"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="edit-longitude">Longitude</Label>
+                <div className="space-y-1">
+                  <Label htmlFor="edit-longitude" className="text-xs">Longitude</Label>
                   <Input
                     id="edit-longitude"
                     type="number"
@@ -485,35 +484,35 @@ const StopsManagement = () => {
                     value={formData.longitude}
                     onChange={(e) => setFormData({...formData, longitude: e.target.value})}
                     required
-                    className="transport-input"
+                    className="transport-input h-9"
                   />
                 </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="edit-cost">Cost (Optional)</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="edit-cost" className="text-xs">Cost (Optional)</Label>
                 <Input
                   id="edit-cost"
                   type="number"
                   step="0.01"
                   value={formData.cost}
                   onChange={(e) => setFormData({...formData, cost: e.target.value})}
-                  className="transport-input"
+                  className="transport-input h-9"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="edit-order_number">Order (Optional)</Label>
+              <div className="space-y-1">
+                <Label htmlFor="edit-order_number" className="text-xs">Order (Optional)</Label>
                 <Input
                   id="edit-order_number"
                   type="number"
                   value={formData.order_number}
                   onChange={(e) => setFormData({...formData, order_number: e.target.value})}
-                  className="transport-input"
+                  className="transport-input h-9"
                 />
               </div>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-2">
               <Button type="submit" className="transport-button-primary flex-1">
                 Update Stop
               </Button>
