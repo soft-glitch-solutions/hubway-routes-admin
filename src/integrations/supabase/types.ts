@@ -321,6 +321,7 @@ export type Database = {
           id: string
           is_active: boolean | null
           joined_at: string | null
+          status: string | null
           user_id: string
         }
         Insert: {
@@ -328,6 +329,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           joined_at?: string | null
+          status?: string | null
           user_id: string
         }
         Update: {
@@ -335,6 +337,7 @@ export type Database = {
           id?: string
           is_active?: boolean | null
           joined_at?: string | null
+          status?: string | null
           user_id?: string
         }
         Relationships: [
@@ -1015,7 +1018,6 @@ export type Database = {
           completed_at: string | null
           created_at: string | null
           current_stop_sequence: number
-          driver_id: string | null
           has_driver: boolean | null
           id: string
           last_ping_time: string | null
@@ -1028,7 +1030,6 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           current_stop_sequence?: number
-          driver_id?: string | null
           has_driver?: boolean | null
           id?: string
           last_ping_time?: string | null
@@ -1041,7 +1042,6 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           current_stop_sequence?: number
-          driver_id?: string | null
           has_driver?: boolean | null
           id?: string
           last_ping_time?: string | null
@@ -1051,13 +1051,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "journeys_driver_id_fkey"
-            columns: ["driver_id"]
-            isOneToOne: false
-            referencedRelation: "drivers"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "journeys_route_id_fkey"
             columns: ["route_id"]
